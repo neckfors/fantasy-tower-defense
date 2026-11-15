@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Tower Defense Mockup</title>
+<style>
+body{margin:0;background:#0b0d14;color:#e8dcc0;font-family:Georgia,serif;display:flex;justify-content:center}
+#w{position:relative;width:900px;height:700px}
+canvas{display:block}
+.hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;padding:14px 20px;pointer-events:none}
+.pill{background:#1a1626cc;border:1px solid #c9a24a;border-radius:10px;padding:6px 14px;font-size:15px;box-shadow:0 0 12px #0008}
+.bar{position:absolute;left:250px;right:250px;bottom:18px;height:16px;background:#1a1626;border:1px solid #c9a24a;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:68%;background:linear-gradient(90deg,#6a3fc9,#b98cff)}
+.lv{position:absolute;bottom:40px;width:100%;text-align:center;font-size:14px;color:#c9a24a}
+.up{position:absolute;left:20px;bottom:18px;width:200px;background:#1a1626ee;border:1px solid #c9a24a;border-radius:10px;padding:10px;font-size:13px}
+.up b{color:#ffd77a}
+</style></head><body><div id="w"><canvas id="c" width="900" height="700"></canvas>
+<div class="hud"><div class="pill">⚔ Wave 7 / ∞</div><div class="pill">❤ Tower 420 / 500</div><div class="pill">☠ 63 slain</div></div>
+<div class="lv">Level 5</div><div class="bar"><i></i></div>
+<div class="up"><b>Level-up ready soon!</b><br>Pick 1 of 3:<br>🔥 Fireball +20% dmg<br>🏹 Arrows +1 volley<br>🛡 Tower walls +100 HP</div></div>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),cx=450,cy=360;
+let g=x.createRadialGradient(cx,cy,40,cx,cy,460);g.addColorStop(0,'#2d3a2a');g.addColorStop(.6,'#1b2420');g.addColorStop(1,'#0b0d14');
+x.fillStyle=g;x.fillRect(0,0,900,700);
+// grass specks
+for(let i=0;i<500;i++){x.fillStyle='rgba(120,170,90,'+Math.random()*.15+')';x.fillRect(Math.random()*900,Math.random()*700,2,5)}
+// spawn ring (big circle)
+x.setLineDash([8,10]);x.strokeStyle='#c9a24a88';x.lineWidth=2;x.beginPath();x.arc(cx,cy,300,0,7);x.stroke();x.setLineDash([]);
+// range ring
+x.strokeStyle='#8fd0ff55';x.beginPath();x.arc(cx,cy,190,0,7);x.stroke();
+x.fillStyle='#8fd0ff0d';x.fill();
+// tower
+x.fillStyle='#000a';x.beginPath();x.ellipse(cx,cy+34,48,14,0,0,7);x.fill();
+x.fillStyle='#6b6f80';x.fillRect(cx-30,cy-30,60,62);
+x.fillStyle='#8a8fa3';x.fillRect(cx-30,cy-30,14,62);
+x.fillStyle='#4b3f6b';x.beginPath();x.moveTo(cx-38,cy-30);x.lineTo(cx,cy-80);x.lineTo(cx+38,cy-30);x.fill();
+x.fillStyle='#ffd77a';x.fillRect(cx-5,cy-12,10,16);
+x.font='22px serif';x.fillText('🚩',cx-2,cy-72);
+// enemies on ring
+const E=['🧑‍🌾','🧙','⚔️','🥷','🐉','🧌','🗿','🧟','🧙','🧑‍🌾','🥷','🧌'];
+E.forEach((e,i)=>{const a=i/E.length*6.283+.3,r=285+Math.random()*30,s=(e=='🐉'||e=='🧌')?40:(e=='🗿'?46:26);
+ const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;x.font=s+'px serif';x.textAlign='center';x.fillText(e,px,py);
+ x.strokeStyle='#ffffff22';x.lineWidth=1;x.beginPath();x.moveTo(px,py);x.lineTo(cx+Math.cos(a)*(r-60),cy+Math.sin(a)*(r-60));x.stroke()});
+// closer enemies + projectiles
+[[570,250,'🧑‍🌾'],[330,470,'🥷'],[600,430,'🧙']].forEach(([a,b,e])=>{x.font='26px serif';x.fillText(e,a,b);
+ x.strokeStyle='#ffb347';x.lineWidth=2;x.beginPath();x.moveTo(cx,cy-20);x.lineTo(a-(a-cx)*.15,b-(b-cy)*.15);x.stroke()});
+x.fillStyle='#ff7a2a';x.beginPath();x.arc(530,300,8,0,7);x.fill();
+x.fillStyle='#ffd77a';x.font='18px Georgia';x.fillText('-24',575,225);
+</script></body></html>
