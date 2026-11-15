@@ -12,3 +12,7 @@ Open http://localhost:8123 (needs internet for the Three.js CDN). Drag to orbit,
 
 ## Credits
 See [CREDITS.md](CREDITS.md) — all models are CC0.
+
+## Support
+
+If you like the app, you can support the author on [PayPal](https://paypal.me/neckfors). Thank you!
