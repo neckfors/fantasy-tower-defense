@@ -3,7 +3,7 @@ import { jumpToWave } from './waves.js';
 import { spawnEnemy, clearEnemies, enemies, isAlive, damageEnemy } from './enemies.js';
 import { clearArrows } from './combat.js';
 
-// Hidden developer panel: type "devmode" anywhere (or press F2) to toggle.
+// Hidden developer panel: type the secret code anywhere to toggle.
 export function initDev(scene) {
   const el = document.createElement('div');
   el.style.cssText = 'display:none;position:fixed;left:16px;top:70px;background:#1a1626ee;border:1px solid #c9a24a;border-radius:10px;padding:10px 12px;font:13px Georgia,serif;color:#e8dcc0;z-index:50;flex-direction:column;gap:6px;width:200px';
@@ -28,9 +28,8 @@ export function initDev(scene) {
   addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
     const toggle = () => { el.style.display = el.style.display === 'none' ? 'flex' : 'none'; };
-    if (e.key === 'F2') { e.preventDefault(); toggle(); return; }
-    typed = (typed + e.key.toLowerCase()).slice(-7);
-    if (typed === 'devmode') toggle();
+    typed = (typed + e.key.toLowerCase()).slice(-8);
+    if (typed === 'samsam..') toggle();
   });
   window.__dev = { go, spawn: k => spawnEnemy(scene, k, 100) };
 }

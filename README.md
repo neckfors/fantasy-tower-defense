@@ -10,7 +10,7 @@ Browser-based 3D tower defense: one tower in the middle, enemies walk in a strai
 
 **Modes:** Story (5 chapters of 10 waves, boss at the end of each, progress saved in the browser) and Endless (best wave saved). **Sound:** generated in code (Web Audio); press M or click the speaker to mute.
 
-**Developer mode (hidden):** type `devmode` or press F2 to open a panel: jump to any wave, add any number of coins, next boss wave, +level, kill all, god mode.
+**Developer mode (hidden):** a secret code opens a panel: jump to any wave, add any number of coins, next boss wave, +level, kill all, god mode.
 
 **Play:** https://neckfors.github.io/fantasy-tower-defense/`n`n## Run
 ```
