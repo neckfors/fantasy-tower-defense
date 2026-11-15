@@ -1,6 +1,6 @@
 import { game, addXp } from './game.js';
 import { jumpToWave } from './waves.js';
-import { clearEnemies, enemies, isAlive, damageEnemy } from './enemies.js';
+import { spawnEnemy, clearEnemies, enemies, isAlive, damageEnemy } from './enemies.js';
 import { clearArrows } from './combat.js';
 
 // Hidden developer panel: type "devmode" anywhere (or press F2) to toggle.
@@ -30,5 +30,5 @@ export function initDev(scene) {
     typed = (typed + e.key.toLowerCase()).slice(-7);
     if (typed === 'devmode') toggle();
   });
-  window.__dev = { go };
+  window.__dev = { go, spawn: k => spawnEnemy(scene, k, 100) };
 }

@@ -11,5 +11,8 @@
 
 The tower, ground, trees and standing stones are generated in code.
 
+## Dragon
+- **Dragon** by Quaternius — https://poly.pizza/m/VBvzjFIYws — License: CC0 (public domain), commercial use OK. File: `assets/models/Dragon.glb` (re-coloured in code).
+
 ## Sound
 All sound effects are generated in code with the Web Audio API (`src/audio.js`). No audio files are used, so no third-party audio licenses apply.
