@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { SPAWN_R, TOWER_R } from './world.js';
 import { damageTower, addXp, game } from './game.js';
+import { sfx } from './audio.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -73,6 +74,7 @@ export function damageEnemy(e, dmg) {
   e.hp -= dmg;
   e.flash = 0.12;
   e.mats.forEach(m => m.emissive.setHex(0xff5522));
+  sfx(e.hp <= 0 ? 'die' : 'hit');
   if (e.hp <= 0) {
     e.state = 'dead'; e.timer = 0;
     e.mixer.stopAllAction();
@@ -106,7 +108,7 @@ export function updateEnemies(dt, scene) {
         p.z -= (p.z / d) * e.speed * dt;
       }
     } else if (e.state === 'hit') {
-      if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(e.t.dmg); }
+      if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(e.t.dmg); sfx('hurt'); }
     } else {                               // dead: lie there, then sink away
       e.timer += dt;
       if (e.timer > 1.5) p.y -= dt * 0.6;

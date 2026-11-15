@@ -23,3 +23,7 @@ canvas{display:block}
 .card:hover{transform:translateY(-6px);box-shadow:0 0 24px #c9a24a88}
 .card .ic{font-size:44px}.card b{color:#ffd77a;font-size:18px}.card span{opacity:.85}
 #load{position:fixed;inset:0;display:grid;place-items:center;background:#0b0d14;font-size:22px;transition:opacity .6s}
+#menu,#chapter{z-index:20}
+#chapter p{max-width:420px;text-align:center}
+#chbtns{display:flex;gap:18px;margin-top:20px}
+#m-prog,#m-best{color:#ffd77a;font-size:13px}

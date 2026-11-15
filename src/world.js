@@ -3,6 +3,14 @@ import * as THREE from 'three';
 export const SPAWN_R = 30;
 export const TOWER_R = 3.2;
 
+let groundMesh;
+// chapter look: ground colour + sky/fog colour
+export function setTheme(scene, { ground, sky }) {
+  groundMesh.material.color.setHex(ground);
+  scene.background.setHex(sky);
+  scene.fog.color.setHex(sky);
+}
+
 export function buildWorld(scene, renderer) {
   scene.background = new THREE.Color(0x1d2540);
   scene.fog = new THREE.Fog(0x1d2540, 45, 110);
@@ -23,6 +31,7 @@ export function buildWorld(scene, renderer) {
     new THREE.MeshStandardMaterial({ color: 0x4f7a3a, roughness: 1 }));
   ground.receiveShadow = true;
   scene.add(ground);
+  groundMesh = ground;
 
   // dirt courtyard around the tower
   const dirt = new THREE.Mesh(

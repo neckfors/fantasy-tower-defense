@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateFlag } from './world.js';
-import { loadModels, updateEnemies } from './enemies.js';
+import { loadModels, updateEnemies, clearEnemies } from './enemies.js';
 import { updateCombat } from './combat.js';
 import { updateWaves } from './waves.js';
 import { game, checkLevel, pickUpgrades } from './game.js';
 import * as ui from './ui.js';
 import { initDev } from './dev.js';
+import { sfx, toggleMute, isMuted } from './audio.js';
+import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
+import { clearArrows } from './combat.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -42,11 +45,36 @@ await loadModels();
 document.getElementById('load').style.opacity = 0;
 setTimeout(() => document.getElementById('load').remove(), 700);
 
+// ---- menu & story chapters ----
+const $ = id => document.getElementById(id);
+game.menu = true;
+const sv = load();
+$('m-prog').textContent = `Chapter ${Math.min(sv.unlocked || 1, 5)} unlocked`;
+$('m-best').textContent = sv.best ? `Best: wave ${sv.best}` : '';
+$('mute').onclick = toggleMute;
+$('mute').textContent = isMuted() ? '🔇' : '🔊';
+const begin = (mode, ch) => { sfx('click'); $('menu').hidden = true; $('chapter').hidden = true; clearEnemies(scene); clearArrows(scene); game.cleared = false; startMode(scene, mode, ch); game.menu = false; };
+$('m-endless').onclick = () => begin('endless');
+$('m-story').onclick = () => begin('story', Math.min(load().unlocked || 1, CHAPTERS.length));
+let clearShown = false;
+function showChapterClear() {
+  const ch = game.chapter, last = ch >= CHAPTERS.length;
+  chapterCleared(); sfx('win');
+  $('chtitle').textContent = last ? 'Victory! The Warlord is slain' : `Chapter ${ch} cleared!`;
+  $('chtext').textContent = last ? 'You have defended the realm. Try Endless mode for a real challenge.' : `Next: ${CHAPTERS[ch].name} - ${CHAPTERS[ch].intro}`;
+  const b = $('chbtns'); b.innerHTML = '';
+  const add = (t, f) => { const x = document.createElement('button'); x.className = 'card'; x.innerHTML = `<b>${t}</b>`; x.onclick = f; b.append(x); };
+  if (!last) add('Next chapter', () => { clearShown = false; begin('story', ch + 1); });
+  add('Main menu', () => location.reload());
+  $('chapter').hidden = false;
+}
+
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
   const frame = Math.min(clock.getDelta(), 0.05);
-  const frozen = game.leveling || game.over;
+  const frozen = game.leveling || game.over || game.menu || game.cleared;
+  if (game.cleared && !clearShown) { clearShown = true; showChapterClear(); }
   const dt = frozen ? 0 : frame;
 
   if (game.leveling && !ui.isLevelOpen()) {

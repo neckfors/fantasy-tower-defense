@@ -1,11 +1,13 @@
 import { game } from './game.js';
+import { sfx } from './audio.js';
+import { waveLabel, recordEndless, load } from './modes.js';
 
 const $ = id => document.getElementById(id);
 let levelOpen = false;
 export const isLevelOpen = () => levelOpen;
 
 export function updateHud() {
-  $('wave').textContent = `⚔ Wave ${game.wave}`;
+  $('wave').textContent = `⚔ ${waveLabel()}`;
   $('kills').textContent = `☠ ${game.kills}`;
   $('hpfill').style.width = `${(game.towerHp / game.maxHp) * 100}%`;
   $('hptext').textContent = `${Math.ceil(game.towerHp)} / ${game.maxHp}`;
@@ -16,11 +18,13 @@ export function updateHud() {
 export function banner(text) {
   const b = $('banner');
   b.textContent = text;
+  sfx(text.includes('BOSS') ? 'boss' : 'wave');
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 
 export function showLevelUp(choices, onPick) {
   levelOpen = true;
+  sfx('levelup');
   $('lvltitle').textContent = `Level ${game.level}!`;
   const box = $('cards');
   box.innerHTML = '';
@@ -35,7 +39,10 @@ export function showLevelUp(choices, onPick) {
 }
 
 export function showGameOver() {
-  $('goinfo').textContent = `You held out to wave ${game.wave} with ${game.kills} kills.`;
+  sfx('over');
+  recordEndless();
+  const best = load().best;
+  $('goinfo').textContent = `You held out to ${waveLabel()} with ${game.kills} kills.` + (game.mode === 'endless' ? ` Best: wave ${best}.` : '');
   $('gameover').hidden = false;
 }
 $('restart').onclick = () => location.reload();

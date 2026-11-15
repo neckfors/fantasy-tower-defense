@@ -13,8 +13,14 @@
 <div id="banner"></div>
 <div id="xp"><div id="lvl">Level 1</div><div class="bar xp"><i id="xpfill"></i></div></div>
 <a id="support" class="pill" href="https://paypal.me/neckfors" target="_blank" rel="noopener">♥ Support the author</a>
+<button id="mute" class="pill" title="Mute (M)" style="position:fixed;left:20px;bottom:16px;cursor:pointer;color:inherit">🔊</button>
 <div id="levelup" class="overlay" hidden><h2 id="lvltitle"></h2><p>Choose an upgrade for your tower</p><div id="cards"></div></div>
 <div id="gameover" class="overlay" hidden><h2>The tower has fallen</h2><p id="goinfo"></p><button class="card" id="restart"><b>Try again</b></button></div>
+<div id="menu" class="overlay"><h2>Fantasy Tower Defense</h2><div id="cards">
+  <button class="card" id="m-story"><div class="ic">⚔</div><b>Story</b><span>5 chapters, a boss ends each</span><span id="m-prog"></span></button>
+  <button class="card" id="m-endless"><div class="ic">∞</div><b>Endless</b><span>Survive as long as you can</span><span id="m-best"></span></button>
+</div></div>
+<div id="chapter" class="overlay" hidden><h2 id="chtitle"></h2><p id="chtext"></p><div id="chbtns"></div></div>
 <div id="load">Summoning peasants…</div>
 <script type="module" src="src/main.js"></script>
 </body></html>

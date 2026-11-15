@@ -10,3 +10,6 @@
 - **Three.js** (MIT) — https://threejs.org — loaded from jsDelivr CDN.
 
 The tower, ground, trees and standing stones are generated in code.
+
+## Sound
+All sound effects are generated in code with the Web Audio API (`src/audio.js`). No audio files are used, so no third-party audio licenses apply.

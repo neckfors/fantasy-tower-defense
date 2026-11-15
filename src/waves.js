@@ -28,6 +28,7 @@ export function updateWaves(dt, scene, ui) {
   } else if (w.toSpawn === 0 && !enemies.some(isAlive)) {
     w.running = false;
     w.breakT = 4;
+    if (game.mode === 'story' && isBossWave(game.wave)) game.cleared = true;
   }
 }
 

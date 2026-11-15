@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { game } from './game.js';
+import { sfx } from './audio.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
 
 const ORIGIN = new THREE.Vector3(0, 13.5, 0);
@@ -44,6 +45,7 @@ function fire(scene, target) {
   mesh.position.copy(ORIGIN);
   scene.add(mesh);
   arrows.push({ mesh, target });
+  sfx('shoot');
 }
 
 export function clearArrows(scene) {
