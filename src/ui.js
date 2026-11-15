@@ -1,3 +1,4 @@
+import { waveFx, levelFx } from './fx.js';
 import { game } from './game.js';
 import { sfx } from './audio.js';
 import { waveLabel, recordEndless, load } from './modes.js';
@@ -19,13 +20,13 @@ export function updateHud() {
 export function banner(text) {
   const b = $('banner');
   b.textContent = text;
-  sfx(text.includes('BOSS') ? 'boss' : 'wave');
+  sfx(text.includes('BOSS') ? 'boss' : 'wave'); waveFx(text.includes('BOSS'));
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 
 export function showLevelUp(choices, onPick) {
   levelOpen = true;
-  sfx('levelup');
+  sfx('levelup'); levelFx();
   $('lvltitle').textContent = `Level ${game.level}!`;
   const box = $('cards');
   box.innerHTML = '';

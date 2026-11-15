@@ -10,7 +10,7 @@ import { initDev } from './dev.js';
 import { initTower, updateTower } from './tower-fx.js';
 import { applyShop, emeralds, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
-import { initFx, updateFx } from './fx.js';
+import { initFx, updateFx, shakeStep, fireworks } from './fx.js';
 import { updateKnights } from './knights.js';
 import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
@@ -81,7 +81,7 @@ $('m-story').onclick = () => {
 $('chback').onclick = () => { sfx('click'); $('chsel').hidden = true; $('menu').hidden = false; };
 
 // ---- pause (P / Esc / button) ----
-const setPause = on => { if (on && (game.menu || game.over || game.leveling || game.cleared)) return; game.paused = on; $('pause').hidden = !on; };
+const setPause = on => { if (on && (game.menu || game.over || game.leveling || game.cleared)) return; game.paused = on; $('pause').hidden = !on; sfx(on ? 'pause' : 'resume'); };
 $('pausebtn').onclick = () => setPause(!game.paused);
 $('resume').onclick = () => setPause(false);
 $('quit').onclick = () => location.reload();
@@ -92,7 +92,7 @@ addEventListener('keydown', e => {
 let clearShown = false;
 function showChapterClear() {
   const ch = game.chapter, last = ch >= CHAPTERS.length;
-  chapterCleared(); sfx('win');
+  chapterCleared(); sfx('win'); sfx('fanfare'); fireworks();
   $('chtitle').textContent = last ? 'Victory! The Warlord is slain' : `Chapter ${ch} cleared!`;
   $('chtext').textContent = last ? 'You have defended the realm. Try Endless mode for a real challenge.' : `Next: ${CHAPTERS[ch].name} - ${CHAPTERS[ch].intro}`;
   const b = $('chbtns'); b.innerHTML = '';
@@ -102,6 +102,20 @@ function showChapterClear() {
   $('chapter').hidden = false;
 }
 
+// shadowy silhouettes: enemies hidden behind the tower/scenery are redrawn as translucent purple shades
+const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7a4cff, transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false });
+function ghostPass() {
+  if (game.menu) return;
+  ghostMat.opacity = 0.42 + Math.sin(clock.elapsedTime * 5) * 0.08;
+  const bg = scene.background, fog = scene.fog, sm = renderer.shadowMap.autoUpdate;
+  scene.background = null; scene.fog = null; scene.overrideMaterial = ghostMat;
+  renderer.shadowMap.autoUpdate = false; renderer.autoClear = false;
+  camera.layers.set(1);
+  renderer.render(scene, camera);
+  camera.layers.set(0);
+  renderer.autoClear = true; renderer.shadowMap.autoUpdate = sm;
+  scene.overrideMaterial = null; scene.background = bg; scene.fog = fog;
+}
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
@@ -127,7 +141,11 @@ renderer.setAnimationLoop(() => {
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
   ui.updateHud();
+  const sk = shakeStep(frame);
+  camera.position.add(sk);
   renderer.render(scene, camera);
+  ghostPass();
+  camera.position.sub(sk);
   updateBars(camera);
 });
 

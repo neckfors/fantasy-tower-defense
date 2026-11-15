@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { game } from './game.js';
+import { sfx } from './audio.js';
 
 // Visual effects: additive particles, expanding rings, meteors, flying coin/emerald pickups, shield dome.
 let scene;
@@ -163,10 +164,41 @@ export function updateFx(dt) {
       const d = tmp.length();
       if (d < 1) {
         burst(TOP, o.emerald ? 0x3dff8a : 0xffd23f, o.emerald ? 18 : 6, 4, 0.5, 0, 0);
-        scene.remove(m); pickups.splice(i, 1); continue;
+        sfx(o.emerald ? 'gem' : 'coin'); scene.remove(m); pickups.splice(i, 1); continue;
       }
       m.position.addScaledVector(tmp.divideScalar(d), Math.min(d, (6 + o.spd) * dt));
     }
     if (o.emerald || Math.random() < 0.3) spark(m.position.x, m.position.y, m.position.z, r(), r(), r(), o.emerald ? 0x3dff8a : 0xffd23f, 0.4);
   }
+}
+
+// ---- camera shake + big moments ----
+let shakeAmt = 0;
+const shakeOff = new THREE.Vector3();
+export function shake(a) { shakeAmt = Math.max(shakeAmt, a); }
+export function shakeStep(dt) {
+  shakeAmt = Math.max(0, shakeAmt - dt * 2.2);
+  return shakeOff.set((Math.random() - 0.5) * shakeAmt, (Math.random() - 0.5) * shakeAmt, (Math.random() - 0.5) * shakeAmt);
+}
+const BASE = new THREE.Vector3(0, 0.3, 0), MID = new THREE.Vector3(0, 8, 0);
+export function levelFx() {
+  ring(BASE, 0xffd77a, 26, 0.9, 0.2); ring(BASE, 0xfff2b0, 14, 0.6, 0.2);
+  for (let k = 0; k < 3; k++) burst(MID, 0xffe28a, 40, 14, 1.2, 4, 3);
+  shake(0.25);
+}
+export function waveFx(boss) {
+  ring(BASE, boss ? 0xff3030 : 0x9a7bff, boss ? 50 : 36, boss ? 1.2 : 0.8, 0.2);
+  if (boss) { ring(BASE, 0xff8030, 30, 0.9, 0.2); shake(0.9); }
+}
+export function deathFx(p, scale = 1) {
+  const q = new THREE.Vector3(p.x, p.y + 1 * scale, p.z);
+  burst(q, 0x7a4cc8, 16, 5 * scale, 0.7, 2, 4);
+  burst(q, 0xd0b0ff, 8, 8 * scale, 0.4, 1, 0);
+}
+export function hurtFx() { shake(0.5); burst(MID, 0xff4030, 14, 8, 0.5, 1, 0); }
+export function fireworks() {
+  for (let k = 0; k < 7; k++) setTimeout(() => {
+    const c = [0xffd77a, 0xff6a9a, 0x7ad0ff, 0xa0ff9a][k % 4];
+    burst(new THREE.Vector3((Math.random() - 0.5) * 24, 16 + Math.random() * 10, (Math.random() - 0.5) * 24), c, 50, 12, 1.3, 0, 4);
+  }, k * 220);
 }

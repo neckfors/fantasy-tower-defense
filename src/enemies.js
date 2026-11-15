@@ -6,7 +6,7 @@ import { damageTower, addXp, game } from './game.js';
 import { sfx } from './audio.js';
 import { addCoins, rollEmerald } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
-import { pickup } from './fx.js';
+import { pickup, deathFx, hurtFx, shake } from './fx.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -49,16 +49,16 @@ export function spawnEnemy(scene, typeKey, baseHp) {
   obj.traverse(n => {
     if (!n.isMesh) return;
     if (t.raw) {                       // non-KayKit model: keep as is, just clone materials for hit flash
-      n.castShadow = true;
+      n.castShadow = true; n.layers.enable(1);
       n.material = n.material.clone();
-      n.material.metalness = 0;          // metallic look is black without an environment map
+      n.material.metalness = 0;         // metallic look is black without an environment map
       n.material.roughness = 0.8;
       if (/^Dragon_[134]$/.test(n.name)) n.material.color.lerp(new THREE.Color(0xc23b2a), 0.65);   // model is near-black: make it red
       if (n.material.emissive) mats.push(n.material);
       return;
     }
     if (!BODY.test(n.name) && !t.keep.includes(n.name)) { n.visible = false; return; }
-    n.castShadow = true;
+    n.castShadow = true; n.layers.enable(1);
     n.material = n.material.clone();
     n.material.color.setHex(tint);
     mats.push(n.material);
@@ -101,6 +101,9 @@ export function damageEnemy(e, dmg, quiet) {
     for (let k = 0; k < coins; k++) pickup(e.obj.position, false);
     rollEmerald(e, n => { emeraldToast(n); for (let k = 0; k < Math.min(n, 3); k++) pickup(e.obj.position, true); });
     removeBar(e);
+    e.obj.traverse(n => n.layers.disable(1));
+    deathFx(e.obj.position, Math.min(2.5, e.obj.scale.x));
+    if (e.obj.scale.x >= 3) shake(0.8);
   }
 }
 
@@ -131,7 +134,7 @@ export function updateEnemies(dt, scene) {
         p.z -= (p.z / d) * sp * dt;
       }
     } else if (e.state === 'hit') {
-      if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(e.t.dmg); sfx('hurt'); }
+      if ((e.atk += dt) >= 1) { e.atk = 0; const sh = game.shield > 0; damageTower(e.t.dmg); sfx(sh ? 'shieldhit' : 'hurt'); if (!sh) hurtFx(); }
     } else {                               // dead: lie there, then sink away
       e.timer += dt;
       if (e.t.fly && p.y > 0) p.y = Math.max(0, p.y - dt * 8);   // dragons crash to the ground

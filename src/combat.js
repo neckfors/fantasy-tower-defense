@@ -92,7 +92,7 @@ function onHit(scene, target) {
     damageEnemy(best, dmgNow() * 0.5);
     const A = aim(from), B = aim(best);
     for (let k = 0; k < 2; k++) { const line = new THREE.Line(jagged(A, B), boltMat); scene.add(line); bolts.push({ line, life: 0.22 }); }
-    burst(B, 0x9fe0ff, 14, 7, 0.4, 0, 0);
+    burst(B, 0x9fe0ff, 14, 7, 0.4, 0, 0); sfx('zap');
     for (let k = 0; k < 10; k++) { const p = A.clone().lerp(B, Math.random()); spark(p.x, p.y, p.z, r2() * 2, r2() * 2, r2() * 2, 0xcff4ff, 0.3); }
     ring(best.obj.position, 0x9fe0ff, 2.5, 0.3);
     from = best;
@@ -106,7 +106,7 @@ function fire(scene, target) {
   scene.add(mesh);
   burst(ORIGIN, game.fire ? 0xff7a1a : 0xffe9a0, 14, 5, 0.4, 1, 0);   // muzzle flash
   arrows.push({ mesh, target });
-  sfx('shoot');
+  sfx(game.fire ? 'fireshoot' : 'shoot');
   sorcererCast(target.obj.position);
 }
 
