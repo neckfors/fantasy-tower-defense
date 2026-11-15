@@ -28,6 +28,7 @@ export function initDev(scene) {
   addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
     const toggle = () => { el.style.display = el.style.display === 'none' ? 'flex' : 'none'; };
+    if (e.key.length !== 1) return;
     typed = (typed + e.key.toLowerCase()).slice(-8);
     if (typed === 'samsam..') toggle();
   });
