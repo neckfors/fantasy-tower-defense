@@ -1,7 +1,25 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#0b0d14;font-family:Georgia,serif;color:#e8dcc0}
 canvas{display:block}
-#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:14px 20px;pointer-events:none}
 .pill{background:#1a1626cc;border:1px solid #c9a24a;border-radius:10px;padding:6px 14px;font-size:15px;box-shadow:0 0 12px #0008}
+#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;pointer-events:none}
+.hp{display:flex;flex-direction:column;gap:4px;min-width:220px;text-align:center}
+.bar{height:12px;background:#0006;border:1px solid #c9a24a88;border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;transition:width .15s}
+#hpfill{background:linear-gradient(90deg,#b52b2b,#ec6a5a)}
+#xp{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(420px,60vw);text-align:center;pointer-events:none}
+#lvl{color:#ffd77a;font-size:14px;margin-bottom:3px;text-shadow:0 1px 3px #000}
+.bar.xp{height:14px}
+#xpfill{width:0;background:linear-gradient(90deg,#6a3fc9,#b98cff)}
 #support{position:fixed;right:20px;bottom:16px;color:#ffd77a;text-decoration:none;font-size:14px}
 #support:hover{background:#2a2140}
+#banner{position:fixed;top:22%;left:0;right:0;text-align:center;font-size:56px;color:#ffd77a;text-shadow:0 0 24px #c9a24a,0 3px 6px #000;opacity:0;pointer-events:none}
+#banner.show{animation:ban 2.2s ease-out}
+@keyframes ban{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+.overlay{position:fixed;inset:0;background:#0b0d14d0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(3px)}
+.overlay[hidden]{display:none}
+.overlay h2{font-size:44px;margin:0;color:#ffd77a;text-shadow:0 0 20px #c9a24a}
+#cards{display:flex;gap:18px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.card{width:190px;padding:18px 14px;background:linear-gradient(#2a2140,#1a1626);border:2px solid #c9a24a;border-radius:14px;color:#e8dcc0;font-family:inherit;font-size:15px;cursor:pointer;display:flex;flex-direction:column;gap:8px;align-items:center;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-6px);box-shadow:0 0 24px #c9a24a88}
+.card .ic{font-size:44px}.card b{color:#ffd77a;font-size:18px}.card span{opacity:.85}
 #load{position:fixed;inset:0;display:grid;place-items:center;background:#0b0d14;font-size:22px;transition:opacity .6s}

@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateFlag } from './world.js';
-import { loadModels, spawnPeasant, updateEnemies, enemies } from './enemies.js';
+import { loadModels, updateEnemies } from './enemies.js';
+import { updateCombat } from './combat.js';
+import { updateWaves } from './waves.js';
+import { game, checkLevel, pickUpgrades } from './game.js';
+import * as ui from './ui.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -20,6 +24,14 @@ controls.minDistance = 20; controls.maxDistance = 90;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.4;
 
 const tower = buildWorld(scene, renderer);
+
+// faint ring showing the tower's range
+const rangeRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.985, 1, 96).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x8fd0ff, transparent: true, opacity: 0.35 }));
+rangeRing.position.y = 0.05;
+scene.add(rangeRing);
+
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
@@ -30,14 +42,25 @@ document.getElementById('load').style.opacity = 0;
 setTimeout(() => document.getElementById('load').remove(), 700);
 
 const clock = new THREE.Clock();
-let spawnT = 0;
-const countEl = document.getElementById('count');
+let gameOverShown = false;
 renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
-  if ((spawnT -= dt) <= 0 && enemies.length < 25) { spawnPeasant(scene); spawnT = 1.2; }
+  const frame = Math.min(clock.getDelta(), 0.05);
+  const frozen = game.leveling || game.over;
+  const dt = frozen ? 0 : frame;
+
+  if (game.leveling && !ui.isLevelOpen()) {
+    ui.showLevelUp(pickUpgrades(3), up => { up.apply(game); game.leveling = false; checkLevel(); });
+  }
+  if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
+
+  updateWaves(dt, scene, ui);
   updateEnemies(dt, scene);
-  animateFlag(tower, t);
+  updateCombat(dt, scene);
+  animateFlag(tower, clock.elapsedTime);
+  rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
-  countEl.textContent = `Peasants: ${enemies.length}`;
+  ui.updateHud();
   renderer.render(scene, camera);
 });
+
+window.__game = game; // handy for debugging in the console
