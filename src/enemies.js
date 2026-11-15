@@ -25,6 +25,7 @@ export async function loadModels() {
   await Promise.all([...names].map(async n => { models[n] = await loader.loadAsync(`assets/models/${n}.glb`); }));
 }
 
+export const getModel = n => models[n];
 export const enemies = [];
 export const isAlive = e => e.state !== 'dead';
 const rnd = ([a, b]) => a + Math.random() * (b - a);

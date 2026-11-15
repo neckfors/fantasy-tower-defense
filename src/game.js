@@ -3,11 +3,11 @@ export const game = {
   wave: 0, towerHp: 500, maxHp: 500,
   dmg: 12, rate: 1.5, range: 26, multi: 1,
   xp: 0, level: 1, xpNeed: 20, kills: 0,
-  leveling: false, over: false,
+  leveling: false, over: false, picks: {},
 };
 
 export function damageTower(n) {
-  if (game.over || game.god) return;
+  if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
 }

@@ -7,6 +7,7 @@ import { updateWaves } from './waves.js';
 import { game, checkLevel, pickUpgrades } from './game.js';
 import * as ui from './ui.js';
 import { initDev } from './dev.js';
+import { initTower, updateTower } from './tower-fx.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
 import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
 import { clearArrows } from './combat.js';
@@ -42,6 +43,7 @@ addEventListener('resize', () => {
 });
 
 await loadModels();
+initTower(scene, tower);
 document.getElementById('load').style.opacity = 0;
 setTimeout(() => document.getElementById('load').remove(), 700);
 
@@ -78,7 +80,7 @@ renderer.setAnimationLoop(() => {
   const dt = frozen ? 0 : frame;
 
   if (game.leveling && !ui.isLevelOpen()) {
-    ui.showLevelUp(pickUpgrades(3), up => { up.apply(game); game.leveling = false; checkLevel(); });
+    ui.showLevelUp(pickUpgrades(3), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = false; checkLevel(); });
   }
   if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
 
@@ -86,6 +88,7 @@ renderer.setAnimationLoop(() => {
   updateEnemies(dt, scene);
   updateCombat(dt, scene);
   animateFlag(tower, clock.elapsedTime);
+  updateTower(frame, clock.elapsedTime);
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
   ui.updateHud();

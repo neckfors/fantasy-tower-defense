@@ -91,11 +91,11 @@ function buildTower() {
     m.position.x = Math.cos(a) * 3.8; m.position.z = Math.sin(a) * 3.8; m.rotation.y = -a;
   }
   add(new THREE.CylinderGeometry(2.6, 2.8, 2.4, 10), stone, 12.2);             // turret
-  add(new THREE.ConeGeometry(3.2, 4.2, 10), roofM, 15.5);                      // roof
-  const pole = add(new THREE.CylinderGeometry(0.06, 0.06, 2.4, 5), dark, 18.7);
+  add(new THREE.CylinderGeometry(2.9, 2.9, 0.25, 10), roofM, 13.5);            // open platform (the sorcerer stands here)
+  add(new THREE.CylinderGeometry(0.08, 0.08, 3.6, 5), dark, 15.2).position.x = 2.5;   // flag pole
   const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.8, 8, 1),
     new THREE.MeshStandardMaterial({ color: 0xc23b3b, side: THREE.DoubleSide }));
-  flag.position.set(0.75, 19.4, 0); flag.userData.flag = true; g.add(flag);
+  flag.position.set(3.25, 16.4, 0); flag.userData.flag = true; g.add(flag);
   g.userData.flag = flag;
 
   // door + glowing windows
