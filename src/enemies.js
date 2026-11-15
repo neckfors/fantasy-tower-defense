@@ -4,6 +4,8 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { SPAWN_R, TOWER_R } from './world.js';
 import { damageTower, addXp, game } from './game.js';
 import { sfx } from './audio.js';
+import { bank } from './shop.js';
+import { removeBar } from './hpbars.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -93,11 +95,13 @@ export function damageEnemy(e, dmg) {
     a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; a.reset().play();
     game.kills++;
     addXp(e.xp);
+    bank(Math.ceil(e.xp / 5));
+    removeBar(e);
   }
 }
 
 export function clearEnemies(scene) {
-  enemies.forEach(e => scene.remove(e.obj));
+  enemies.forEach(e => { scene.remove(e.obj); removeBar(e); });
   enemies.length = 0;
 }
 

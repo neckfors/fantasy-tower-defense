@@ -9,6 +9,7 @@ export const isLevelOpen = () => levelOpen;
 export function updateHud() {
   $('wave').textContent = `⚔ ${waveLabel()}`;
   $('kills').textContent = `☠ ${game.kills}`;
+  $('goldhud').textContent = `💰 ${game.runGold || 0}`;
   $('hpfill').style.width = `${(game.towerHp / game.maxHp) * 100}%`;
   $('hptext').textContent = `${Math.ceil(game.towerHp)} / ${game.maxHp}`;
   $('xpfill').style.width = `${(game.xp / game.xpNeed) * 100}%`;
@@ -42,7 +43,7 @@ export function showGameOver() {
   sfx('over');
   recordEndless();
   const best = load().best;
-  $('goinfo').textContent = `You held out to ${waveLabel()} with ${game.kills} kills.` + (game.mode === 'endless' ? ` Best: wave ${best}.` : '');
+  $('goinfo').textContent = `You held out to ${waveLabel()} with ${game.kills} kills and earned ${game.runGold || 0} gold.` + (game.mode === 'endless' ? ` Best: wave ${best}.` : '');
   $('gameover').hidden = false;
 }
 $('restart').onclick = () => location.reload();

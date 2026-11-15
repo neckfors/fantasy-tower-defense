@@ -8,12 +8,13 @@ export const game = {
 
 export function damageTower(n) {
   if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
+  if (game.wind && game.towerHp - n <= 0) { game.wind = false; game.towerHp = game.maxHp * 0.25; return; }   // Second Wind
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
 }
 
 export function addXp(n) {
-  game.xp += n;
+  game.xp += n * (game.xpMul || 1);
   checkLevel();
 }
 
