@@ -36,4 +36,12 @@ export function updateBars(camera) {
   }
 }
 
+const toast = document.createElement('div');
+toast.id = 'toast';
+document.body.appendChild(toast);
+export function emeraldToast(n) {
+  toast.textContent = `💎 +${n} emerald${n > 1 ? 's' : ''}!`;
+  toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+}
+
 export function removeBar(e) { if (e.bar) { e.bar.remove(); e.bar = null; } }

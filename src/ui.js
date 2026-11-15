@@ -43,7 +43,7 @@ export function showGameOver() {
   sfx('over');
   recordEndless();
   const best = load().best;
-  $('goinfo').textContent = `You held out to ${waveLabel()} with ${game.kills} kills and earned ${game.runGold || 0} gold.` + (game.mode === 'endless' ? ` Best: wave ${best}.` : '');
+  $('goinfo').textContent = `You held out to ${waveLabel()} with ${game.kills} kills and found ${game.runEmeralds || 0} emeralds.` + (game.mode === 'endless' ? ` Best: wave ${best}.` : '');
   $('gameover').hidden = false;
 }
 $('restart').onclick = () => location.reload();

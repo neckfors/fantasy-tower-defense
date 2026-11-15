@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
-import { game } from './game.js';
+import { game, dmgNow } from './game.js';
 import { getModel, enemies, isAlive, damageEnemy } from './enemies.js';
 
 // Shadow Knights: ghostly knights that leave the tower, run to enemies and hit them.
@@ -62,7 +62,7 @@ export function updateKnights(dt, scene) {
     } else if (k.target) {
       k.obj.rotation.y = Math.atan2(dx, dz);
       setAnim(k, 'atk');
-      if ((k.swing += dt) >= 0.8) { k.swing = 0; damageEnemy(k.target, game.dmg * 1.5); }
+      if ((k.swing += dt) >= 0.8) { k.swing = 0; damageEnemy(k.target, dmgNow() * 1.5); }
     } else setAnim(k, 'idle');
   }
 }

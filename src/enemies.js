@@ -4,8 +4,8 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { SPAWN_R, TOWER_R } from './world.js';
 import { damageTower, addXp, game } from './game.js';
 import { sfx } from './audio.js';
-import { bank } from './shop.js';
-import { removeBar } from './hpbars.js';
+import { addCoins, rollEmerald } from './shop.js';
+import { emeraldToast, removeBar } from './hpbars.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -95,7 +95,8 @@ export function damageEnemy(e, dmg, quiet) {
     a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; a.reset().play();
     game.kills++;
     addXp(e.xp);
-    bank(Math.ceil(e.xp / 5));
+    addCoins(Math.ceil(e.xp / 5));
+    rollEmerald(e, n => emeraldToast(n));
     removeBar(e);
   }
 }
@@ -119,8 +120,9 @@ export function updateEnemies(dt, scene) {
         e.walk.fadeOut(0.2);
         e.mixer.clipAction(e.clip(e.t.atk)).reset().fadeIn(0.2).play();
       } else {
-        p.x -= (p.x / d) * e.speed * dt;   // straight line to the tower
-        p.z -= (p.z / d) * e.speed * dt;
+        const sp = e.speed * (game.frostT > 0 ? 0.4 : 1);   // Frost Nova slow
+        p.x -= (p.x / d) * sp * dt;   // straight line to the tower
+        p.z -= (p.z / d) * sp * dt;
       }
     } else if (e.state === 'hit') {
       if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(e.t.dmg); sfx('hurt'); }

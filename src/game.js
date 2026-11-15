@@ -8,10 +8,14 @@ export const game = {
 
 export function damageTower(n) {
   if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
+  if (game.shield > 0) { const a = Math.min(game.shield, n); game.shield -= a; n -= a; if (n <= 0) return; }   // Barricade
   if (game.wind && game.towerHp - n <= 0) { game.wind = false; game.towerHp = game.maxHp * 0.25; return; }   // Second Wind
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
 }
+
+export const dmgNow = () => game.dmg * (game.rallyT > 0 ? 1.5 : 1);   // Rally Cry buff
+export const rateNow = () => game.rate * (game.rapidT > 0 ? 2 : 1);   // Rapid Fire buff
 
 export function addXp(n) {
   game.xp += n * (game.xpMul || 1);

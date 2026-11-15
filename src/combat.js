@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { game } from './game.js';
+import { game, dmgNow, rateNow } from './game.js';
 import { sfx } from './audio.js';
 import { sorcererCast } from './tower-fx.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
@@ -14,6 +14,7 @@ const aim = e => new THREE.Vector3(e.obj.position.x, e.obj.position.y + 1.3, e.o
 
 export function updateCombat(dt, scene) {
   cooldown -= dt;
+  for (const k of ['rallyT', 'rapidT', 'frostT']) if (game[k] > 0) game[k] = Math.max(0, game[k] - dt);
   if (cooldown <= 0 && !game.over) {
     const targets = enemies
       .filter(isAlive)
@@ -22,7 +23,7 @@ export function updateCombat(dt, scene) {
       .sort((a, b) => a.d - b.d);
     if (targets.length) {
       for (let i = 0; i < game.multi; i++) fire(scene, targets[i % targets.length].e);
-      cooldown = 1 / game.rate;
+      cooldown = 1 / rateNow();
     }
   }
 
@@ -42,7 +43,7 @@ export function updateCombat(dt, scene) {
     if (!isAlive(a.target)) { scene.remove(a.mesh); arrows.splice(i, 1); continue; }
     const to = aim(a.target).sub(a.mesh.position), dist = to.length();
     if (dist < 0.9) {
-      damageEnemy(a.target, game.dmg);
+      damageEnemy(a.target, dmgNow());
       onHit(scene, a.target);
       scene.remove(a.mesh); arrows.splice(i, 1);
     } else {
@@ -58,7 +59,7 @@ const boltMat = new THREE.LineBasicMaterial({ color: 0x9fe0ff });
 const fireMat = new THREE.MeshBasicMaterial({ color: 0xff7a1a });
 
 function onHit(scene, target) {
-  if (game.fire) target.burn = { t: 3, acc: 0, dps: game.dmg * 0.25 * game.fire };
+  if (game.fire) target.burn = { t: 3, acc: 0, dps: dmgNow() * 0.25 * game.fire };
   let from = target;
   const hit = new Set([target]);
   for (let n = 0; n < (game.chain || 0); n++) {
@@ -70,7 +71,7 @@ function onHit(scene, target) {
     }
     if (!best) break;
     hit.add(best);
-    damageEnemy(best, game.dmg * 0.5);
+    damageEnemy(best, dmgNow() * 0.5);
     const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([aim(from), aim(best)]), boltMat);
     scene.add(line); bolts.push({ line, life: 0.18 });
     from = best;
