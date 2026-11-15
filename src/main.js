@@ -10,6 +10,8 @@ import { initDev } from './dev.js';
 import { initTower, updateTower } from './tower-fx.js';
 import { applyShop, gold, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
+import { updateKnights } from './knights.js';
+import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
 import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
 import { clearArrows } from './combat.js';
@@ -95,6 +97,8 @@ renderer.setAnimationLoop(() => {
   updateCombat(dt, scene);
   animateFlag(tower, clock.elapsedTime);
   updateTower(frame, clock.elapsedTime);
+  updateKnights(dt, scene);
+  updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
   ui.updateHud();

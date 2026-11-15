@@ -82,12 +82,12 @@ export function spawnEnemy(scene, typeKey, baseHp) {
   return e;
 }
 
-export function damageEnemy(e, dmg) {
+export function damageEnemy(e, dmg, quiet) {
   if (!isAlive(e)) return;
   e.hp -= dmg;
   e.flash = 0.12;
   e.mats.forEach(m => m.emissive.setHex(0xff5522));
-  sfx(e.hp <= 0 ? 'die' : 'hit');
+  if (e.hp <= 0 || !quiet) sfx(e.hp <= 0 ? 'die' : 'hit');
   if (e.hp <= 0) {
     e.state = 'dead'; e.timer = 0;
     e.mixer.stopAllAction();

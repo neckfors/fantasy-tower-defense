@@ -9,7 +9,7 @@ export const isLevelOpen = () => levelOpen;
 export function updateHud() {
   $('wave').textContent = `⚔ ${waveLabel()}`;
   $('kills').textContent = `☠ ${game.kills}`;
-  $('goldhud').textContent = `💰 ${game.runGold || 0}`;
+  $('goldhud').textContent = `🪙 ${game.coins || 0}`;
   $('hpfill').style.width = `${(game.towerHp / game.maxHp) * 100}%`;
   $('hptext').textContent = `${Math.ceil(game.towerHp)} / ${game.maxHp}`;
   $('xpfill').style.width = `${(game.xp / game.xpNeed) * 100}%`;

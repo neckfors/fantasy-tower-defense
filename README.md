@@ -2,7 +2,7 @@
 
 Browser-based 3D tower defense: one tower in the middle, enemies walk in a straight line from a big outer circle. Gain XP, level up, upgrade the tower.
 
-**Status:** stage 3 — the tower auto-shoots, kills give XP, level-ups offer 1 of 3 upgrades, endless waves, game over + retry. Enemies: peasants, rogues, warriors, wizards, trolls, giants, and a Giant Warlord boss every 10th wave. Flying dragons too. Every enemy has a life bar (bosses: bigger, with their name). Kills earn gold that is saved; spend it in the menu Shop on 8 permanent bonuses. A sorcerer stands on the tower, and the tower grows cooler with every level and upgrade (gold bands, spires, crossbows, ballistas, buttresses, healing stones, beacon, orbiting runes, a crown at level 15).
+**Status:** stage 3 — the tower auto-shoots, kills give XP, level-ups offer 1 of 3 upgrades, endless waves, game over + retry. Enemies: peasants, rogues, warriors, wizards, trolls, giants, and a Giant Warlord boss every 10th wave. Flying dragons too. Medieval life bars on every enemy; boss bars with their name sit at the top of the screen. Level-ups can give Shadow Knights, Chain Lightning and Fire Arrows. Enemies drop coins you spend in the in-game Armoury sidebar (keys 1-9) on upgrades for that run only. Kills earn gold that is saved; spend it in the menu Shop on 8 permanent bonuses. A sorcerer stands on the tower, and the tower grows cooler with every level and upgrade (gold bands, spires, crossbows, ballistas, buttresses, healing stones, beacon, orbiting runes, a crown at level 15).
 
 **Modes:** Story (5 chapters of 10 waves, boss at the end of each, progress saved in the browser) and Endless (best wave saved). **Sound:** generated in code (Web Audio); press M or click the speaker to mute.
 

@@ -33,6 +33,9 @@ export const UPGRADES = [
   { icon: '🔭', name: 'Eagle Eye', desc: '+12% range', apply: g => (g.range *= 1.12) },
   { icon: '🛡', name: 'Reinforced Walls', desc: '+100 max HP and heal 100', apply: g => { g.maxHp += 100; g.towerHp = Math.min(g.maxHp, g.towerHp + 100); } },
   { icon: '🎯', name: 'Volley', desc: '+1 arrow per shot (different targets)', apply: g => (g.multi += 1) },
+  { icon: '👻', name: 'Shadow Knights', desc: '+1 shadow knight that leaves the tower and fights enemies', apply: g => (g.knights = (g.knights || 0) + 1) },
+  { icon: '🌩', name: 'Chain Lightning', desc: 'Arrows zap +1 nearby enemy for 50% damage', apply: g => (g.chain = (g.chain || 0) + 1) },
+  { icon: '🔥', name: 'Fire Arrows', desc: 'Arrows set enemies on fire (burn damage over 3s)', apply: g => (g.fire = (g.fire || 0) + 1) },
   { icon: '❤', name: 'Mending Stones', desc: 'Heal 40% of max HP', apply: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.4)) },
 ];
 

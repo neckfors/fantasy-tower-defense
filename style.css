@@ -27,13 +27,21 @@ canvas{display:block}
 #chapter p{max-width:420px;text-align:center}
 #chbtns{display:flex;gap:18px;margin-top:20px}
 #bars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
-.ebar{position:absolute;left:0;top:0;width:46px;text-align:center;will-change:transform}
-.ebar div{height:6px;background:#000a;border:1px solid #000;border-radius:4px;overflow:hidden}
-.ebar i{display:block;height:100%;width:100%;background:linear-gradient(#7be07b,#2f9a3a)}
-.ebar.boss{width:150px}
-.ebar.boss div{height:12px;border-color:#c9a24a;border-radius:7px}
-.ebar.boss i{background:linear-gradient(#ff7a6a,#b52b2b)}
-.ebar em{display:block;font-style:normal;color:#ffd77a;font-size:15px;text-shadow:0 1px 3px #000,0 0 8px #000;margin-bottom:2px}
+.ebar{position:absolute;left:0;top:0;width:48px;will-change:transform}
+.ebar div,.bbar div{background:#1a0f08;border:2px solid #4a3320;outline:1px solid #c9a24a;box-shadow:0 2px 4px #000c;overflow:hidden;border-radius:0}
+.ebar div{height:6px}
+.ebar i,.bbar i{display:block;height:100%;width:100%;background:repeating-linear-gradient(90deg,#a82020 0 10px,#c23030 10px 12px)}
+#bossbars{position:fixed;top:68px;left:50%;transform:translateX(-50%);width:min(560px,70vw);z-index:6;pointer-events:none;display:flex;flex-direction:column;gap:8px}
+.bbar{text-align:center}
+.bbar div{height:18px;border-width:3px}
+.bbar em{display:block;font-style:normal;font-variant:small-caps;letter-spacing:3px;color:#ffd77a;font-size:24px;text-shadow:0 2px 0 #000,0 0 12px #c9a24a;margin-bottom:3px}
+#side{position:fixed;right:12px;top:84px;width:184px;display:flex;flex-direction:column;gap:5px;z-index:6}
+#side h3{margin:0;text-align:center;color:#ffd77a;font-size:16px;letter-spacing:2px;font-variant:small-caps;background:#1a0f08e0;border:2px solid #4a3320;outline:1px solid #c9a24a;padding:5px}
+#side button{display:flex;justify-content:space-between;align-items:center;gap:6px;font-family:inherit;font-size:13px;color:#e8dcc0;background:#2a1c10e6;border:2px solid #4a3320;outline:1px solid #c9a24a88;border-radius:0;padding:5px 7px;cursor:pointer;text-align:left}
+#side button:hover:not(:disabled){background:#3d2a18;outline-color:#ffd77a}
+#side button:disabled{opacity:.45;cursor:default}
+#side button b{color:#ffd77a;white-space:nowrap}
+#side small{opacity:.6;margin-right:3px}
 #shop{z-index:20}
 .shoplist{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:960px;margin:14px 0}
 .shopitem{width:200px;padding:12px 10px}.shopitem .ic{font-size:30px}.shopitem:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}

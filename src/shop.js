@@ -23,6 +23,7 @@ export const cost = it => Math.round(it.base * (1 + lvl(it.id) * 1.2));
 export function bank(n) {            // called on every kill
   const g = Math.max(1, Math.round(n * (game.goldMul || 1)));
   game.runGold = (game.runGold || 0) + g;
+  game.coins = (game.coins || 0) + g;     // in-run coins for the sidebar shop
   write({ gold: gold() + g });
 }
 
@@ -43,7 +44,7 @@ export function applyShop() {          // at the start of a run
   game.goldMul = 1 + 0.1 * L('gold');
   if (L('volley')) game.multi = 2;
   game.wind = !!L('wind');
-  game.runGold = 0;
+  game.runGold = 0; game.coins = 0;
 }
 
 export function renderShop(el, onChange) {
