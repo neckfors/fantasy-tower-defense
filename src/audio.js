@@ -73,3 +73,33 @@ export function sfx(name) {
   last[name] = now;
   SFX[name]();
 }
+
+// ---- ambient music: generative dark-fantasy pad + slow arpeggio (no audio files) ----
+let musicOn = false;
+const CHORDS = [[110, 165, 220, 261.6], [87.3, 130.8, 174.6, 220], [98, 146.8, 196, 246.9], [82.4, 123.5, 164.8, 207.7]];   // Am, F, G, E
+const SCALE = [440, 523.3, 587.3, 659.3, 784, 880];
+function music() {
+  if (musicOn || !ctx) return;
+  musicOn = true;
+  const mg = ctx.createGain(); mg.gain.value = 0.5;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
+  const dl = ctx.createDelay(1); dl.delayTime.value = 0.45;
+  const fb = ctx.createGain(); fb.gain.value = 0.4; dl.connect(fb).connect(dl);
+  mg.connect(lp).connect(master); lp.connect(dl).connect(master);
+  const note = (type, f, t, dur, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = f; o.detune.value = (Math.random() - 0.5) * 12;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + dur * 0.35); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(mg); o.start(t); o.stop(t + dur);
+  };
+  let bar = 0;
+  const play = () => {
+    const t = ctx.currentTime + 0.1, ch = CHORDS[bar++ % 4], len = 8;
+    ch.forEach(f => note('sawtooth', f, t, len + 1, 0.035));
+    note('sine', ch[0] / 2, t, len + 1, 0.12);
+    for (let i = 0; i < 8; i++) if (Math.random() < 0.75) note('triangle', SCALE[Math.floor(Math.random() * SCALE.length)], t + i, 1.6, 0.05);
+  };
+  play(); setInterval(play, 8000);
+}
+addEventListener('pointerdown', () => setTimeout(music, 50), { once: true });
+addEventListener('keydown', () => setTimeout(music, 50), { once: true });
