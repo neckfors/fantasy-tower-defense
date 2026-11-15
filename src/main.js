@@ -103,7 +103,7 @@ function showChapterClear() {
 }
 
 // shadowy silhouettes: enemies hidden behind the tower/scenery are redrawn as translucent purple shades
-const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7a4cff, transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -50 });
+const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7a4cff, transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -1500 });
 function ghostPass() {
   if (game.menu) return;
   ghostMat.opacity = 0.42 + Math.sin(clock.elapsedTime * 5) * 0.08;
