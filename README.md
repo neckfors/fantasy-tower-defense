@@ -6,7 +6,7 @@ Browser-based 3D tower defense: one tower in the middle, enemies walk in a strai
 
 **New:** coins and emeralds hop out of dead enemies and fly to the tower; spell effects (glowing arrow trails, jagged chain lightning, flames, meteors, frost nova, shield dome); pause with P/Esc or the button; Story mode lets you start from any chapter you have reached; bars never cover menus.
 
-**Made by neckfors and Sam, father & son.**
+**Made by me and my son Sam.**
 
 **Modes:** Story (5 chapters of 10 waves, boss at the end of each, progress saved in the browser) and Endless (best wave saved). **Sound:** generated in code (Web Audio); press M or click the speaker to mute.
 
