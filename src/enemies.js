@@ -4,57 +4,67 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { SPAWN_R, TOWER_R } from './world.js';
 import { damageTower, addXp, game } from './game.js';
 
-const HELD = ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable', 'Mug', '1H_Sword', '2H_Sword', 'Axe', '1H_Axe', '2H_Axe', 'Staff', 'Spellbook', 'Spellbook_open', 'Round_Shield', 'Badge_Shield', 'Rectangle_Shield', 'Spike_Shield', 'Wand', 'Dagger'];
+// hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
+export const TYPES = {
+  peasant: { name: 'Peasant', files: [['Rogue_Hooded', 0xc9a77a], ['Rogue', 0xb08f66], ['Barbarian', 0xd8c29a]], scale: [0.85, 1.15], hp: 1, speed: [2.2, 3.0], dmg: 4, xp: 5, keep: [], atk: 'Unarmed_Melee_Attack_Punch_A', from: 1, weight: 10 },
+  rogue: { name: 'Rogue', files: [['Rogue', 0xffffff]], scale: [1, 1], hp: 0.7, speed: [4, 4.8], dmg: 3, xp: 7, keep: ['Knife', 'Knife_Offhand'], atk: '1H_Melee_Attack_Stab', from: 2, weight: 5 },
+  warrior: { name: 'Warrior', files: [['Knight', 0xffffff]], scale: [1.1, 1.1], hp: 2.2, speed: [1.8, 2.1], dmg: 8, xp: 12, keep: ['1H_Sword', 'Round_Shield'], atk: '1H_Melee_Attack_Slice_Horizontal', from: 3, weight: 4 },
+  wizard: { name: 'Wizard', files: [['Mage', 0xffffff]], scale: [1, 1], hp: 1.2, speed: [2.3, 2.6], dmg: 5, xp: 10, keep: ['2H_Staff'], atk: 'Spellcasting', stop: 14, from: 4, weight: 3 },
+  troll: { name: 'Troll', files: [['Barbarian', 0x7fbf6a]], scale: [1.8, 1.8], hp: 6, speed: [1.5, 1.7], dmg: 15, xp: 30, keep: ['2H_Axe'], atk: '2H_Melee_Attack_Chop', from: 6, weight: 2 },
+  giant: { name: 'Giant', files: [['Knight', 0xaab4c8]], scale: [2.7, 2.7], hp: 14, speed: [1.1, 1.3], dmg: 30, xp: 60, keep: ['2H_Sword'], atk: '2H_Melee_Attack_Slice', from: 8, weight: 1 },
+  boss: { name: 'Giant Warlord', files: [['Knight', 0xd04a3a]], scale: [3.8, 3.8], hp: 45, speed: [1.0, 1.0], dmg: 60, xp: 250, keep: ['2H_Sword'], atk: '2H_Melee_Attack_Spin', from: 99, weight: 0 },
+};
 
-// Peasant = recoloured KayKit rogue/barbarian with weapons hidden
-const PEASANT_LOOKS = [
-  { file: 'Rogue_Hooded', tint: 0xc9a77a },
-  { file: 'Rogue', tint: 0xb08f66 },
-  { file: 'Barbarian', tint: 0xd8c29a },
-];
-
+const BODY = /_(Body|Head|ArmLeft|ArmRight|LegLeft|LegRight|Cape|Helmet|Hat)$/;
 const models = {};
 export async function loadModels() {
   const loader = new GLTFLoader();
-  await Promise.all(PEASANT_LOOKS.map(async l => {
-    models[l.file] = await loader.loadAsync(`assets/models/${l.file}.glb`);
-  }));
+  const names = new Set(Object.values(TYPES).flatMap(t => t.files.map(f => f[0])));
+  await Promise.all([...names].map(async n => { models[n] = await loader.loadAsync(`assets/models/${n}.glb`); }));
 }
 
 export const enemies = [];
-const active = enemies;
 export const isAlive = e => e.state !== 'dead';
+const rnd = ([a, b]) => a + Math.random() * (b - a);
 
-export function spawnPeasant(scene, hp) {
-  const look = PEASANT_LOOKS[Math.floor(Math.random() * PEASANT_LOOKS.length)];
-  const src = models[look.file];
+export function pickType(wave) {
+  const pool = Object.entries(TYPES).filter(([, t]) => t.weight && t.from <= wave);
+  let r = Math.random() * pool.reduce((s, [, t]) => s + t.weight, 0);
+  for (const [k, t] of pool) if ((r -= t.weight) <= 0) return k;
+  return 'peasant';
+}
+
+export function spawnEnemy(scene, typeKey, baseHp) {
+  const t = TYPES[typeKey];
+  const [file, tint] = t.files[Math.floor(Math.random() * t.files.length)];
+  const src = models[file];
   const obj = clone(src.scene);
   const mats = [];
   obj.traverse(n => {
-    if (HELD.includes(n.name)) n.visible = false;
-    if (n.isMesh) {
-      n.castShadow = true;
-      n.material = n.material.clone();
-      n.material.color.setHex(look.tint);
-      mats.push(n.material);
-    }
+    if (!n.isMesh) return;
+    if (!BODY.test(n.name) && !t.keep.includes(n.name)) { n.visible = false; return; }
+    n.castShadow = true;
+    n.material = n.material.clone();
+    n.material.color.setHex(tint);
+    mats.push(n.material);
   });
-  obj.scale.setScalar(0.85 + Math.random() * 0.3);
+  obj.scale.setScalar(rnd(t.scale));
 
   const a = Math.random() * Math.PI * 2;
   obj.position.set(Math.cos(a) * SPAWN_R, 0, Math.sin(a) * SPAWN_R);
-  obj.rotation.y = Math.atan2(-obj.position.x, -obj.position.z); // face tower
+  obj.rotation.y = Math.atan2(-obj.position.x, -obj.position.z);
 
   const mixer = new THREE.AnimationMixer(obj);
   const clip = name => THREE.AnimationClip.findByName(src.animations, name);
   const walk = mixer.clipAction(clip(Math.random() < 0.5 ? 'Walking_A' : 'Walking_B'));
   walk.time = Math.random() * walk.getClip().duration;
+  walk.timeScale = 0.7 + rnd(t.speed) * 0.2;
   walk.play();
 
-  const e = { obj, mixer, walk, mats, clip, hp, state: 'walk', timer: 0, atk: 0, flash: 0,
-    speed: 2.2 + Math.random() * 0.8, xp: 5 };
+  const hp = baseHp * t.hp;
+  const e = { type: typeKey, t, obj, mixer, walk, mats, clip, hp, maxHp: hp, state: 'walk', timer: 0, atk: 0, flash: 0, speed: rnd(t.speed), xp: t.xp };
   scene.add(obj);
-  active.push(e);
+  enemies.push(e);
   return e;
 }
 
@@ -73,28 +83,34 @@ export function damageEnemy(e, dmg) {
   }
 }
 
+export function clearEnemies(scene) {
+  enemies.forEach(e => scene.remove(e.obj));
+  enemies.length = 0;
+}
+
 export function updateEnemies(dt, scene) {
-  for (let i = active.length - 1; i >= 0; i--) {
-    const e = active[i];
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
     e.mixer.update(dt);
     if (e.flash > 0 && (e.flash -= dt) <= 0) e.mats.forEach(m => m.emissive.setHex(0));
     const p = e.obj.position;
+
     if (e.state === 'walk') {
       const d = Math.hypot(p.x, p.z);
-      if (d <= TOWER_R + 1.3) {
+      if (d <= (e.t.stop ?? TOWER_R + 1.3 + e.obj.scale.x * 0.5)) {
         e.state = 'hit';
         e.walk.fadeOut(0.2);
-        e.mixer.clipAction(e.clip('Unarmed_Melee_Attack_Punch_A')).reset().fadeIn(0.2).play();
+        e.mixer.clipAction(e.clip(e.t.atk)).reset().fadeIn(0.2).play();
       } else {
         p.x -= (p.x / d) * e.speed * dt;   // straight line to the tower
         p.z -= (p.z / d) * e.speed * dt;
       }
     } else if (e.state === 'hit') {
-      if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(4); }
+      if ((e.atk += dt) >= 1) { e.atk = 0; damageTower(e.t.dmg); }
     } else {                               // dead: lie there, then sink away
       e.timer += dt;
       if (e.timer > 1.5) p.y -= dt * 0.6;
-      if (e.timer > 3.5) { scene.remove(e.obj); active.splice(i, 1); }
+      if (e.timer > 3.5) { scene.remove(e.obj); enemies.splice(i, 1); }
     }
   }
 }

@@ -2,7 +2,9 @@
 
 Browser-based 3D tower defense: one tower in the middle, enemies walk in a straight line from a big outer circle. Gain XP, level up, upgrade the tower.
 
-**Status:** stage 2 — the tower auto-shoots, kills give XP, level-ups offer 1 of 3 upgrades, endless waves of peasants, game over + retry. More enemy types and bosses come next.
+**Status:** stage 3 — the tower auto-shoots, kills give XP, level-ups offer 1 of 3 upgrades, endless waves, game over + retry. Enemies: peasants, rogues, warriors, wizards, trolls, giants, and a Giant Warlord boss every 10th wave. Dragons are still to come (need a licensed model).
+
+**Developer mode (hidden):** type `devmode` or press F2 to open a panel: jump to any wave, next boss wave, +level, kill all, god mode.
 
 **Play:** https://neckfors.github.io/fantasy-tower-defense/`n`n## Run
 ```

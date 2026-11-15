@@ -6,6 +6,7 @@ import { updateCombat } from './combat.js';
 import { updateWaves } from './waves.js';
 import { game, checkLevel, pickUpgrades } from './game.js';
 import * as ui from './ui.js';
+import { initDev } from './dev.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -63,4 +64,5 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 
+initDev(scene);
 window.__game = game; // handy for debugging in the console

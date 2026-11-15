@@ -7,7 +7,7 @@ export const game = {
 };
 
 export function damageTower(n) {
-  if (game.over) return;
+  if (game.over || game.god) return;
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
 }
