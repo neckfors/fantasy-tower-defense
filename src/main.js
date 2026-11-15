@@ -10,6 +10,7 @@ import { initDev } from './dev.js';
 import { initTower, updateTower } from './tower-fx.js';
 import { applyShop, emeralds, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
+import { initFx, updateFx } from './fx.js';
 import { updateKnights } from './knights.js';
 import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
@@ -48,6 +49,7 @@ addEventListener('resize', () => {
 
 await loadModels();
 initTower(scene, tower);
+initFx(scene);
 document.getElementById('load').style.opacity = 0;
 setTimeout(() => document.getElementById('load').remove(), 700);
 
@@ -65,7 +67,28 @@ refreshGold();
 $('m-shop').onclick = () => { sfx('click'); $('menu').hidden = true; $('shop').hidden = false; renderShop($('shop'), () => sfx('levelup')); };
 $('shopback').onclick = () => { sfx('click'); $('shop').hidden = true; $('menu').hidden = false; refreshGold(); };
 $('m-endless').onclick = () => begin('endless');
-$('m-story').onclick = () => begin('story', Math.min(load().unlocked || 1, CHAPTERS.length));
+$('m-story').onclick = () => {
+  sfx('click'); $('menu').hidden = true; $('chsel').hidden = false;
+  const un = Math.min(load().unlocked || 1, CHAPTERS.length), box = $('chlist'); box.innerHTML = '';
+  CHAPTERS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'card chbtn'; b.disabled = i + 1 > un;
+    b.innerHTML = `<div class="ic">${i + 1 > un ? '🔒' : i + 1 < un ? '✔' : '⚔'}</div><b>${i + 1}. ${c.name}</b><span>${c.intro}</span>`;
+    b.onclick = () => { $('chsel').hidden = true; begin('story', i + 1); };
+    box.appendChild(b);
+  });
+};
+$('chback').onclick = () => { sfx('click'); $('chsel').hidden = true; $('menu').hidden = false; };
+
+// ---- pause (P / Esc / button) ----
+const setPause = on => { if (on && (game.menu || game.over || game.leveling || game.cleared)) return; game.paused = on; $('pause').hidden = !on; };
+$('pausebtn').onclick = () => setPause(!game.paused);
+$('resume').onclick = () => setPause(false);
+$('quit').onclick = () => location.reload();
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') setPause(!game.paused);
+});
 let clearShown = false;
 function showChapterClear() {
   const ch = game.chapter, last = ch >= CHAPTERS.length;
@@ -83,7 +106,7 @@ const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
   const frame = Math.min(clock.getDelta(), 0.05);
-  const frozen = game.leveling || game.over || game.menu || game.cleared;
+  const frozen = game.leveling || game.over || game.menu || game.cleared || game.paused;
   if (game.cleared && !clearShown) { clearShown = true; showChapterClear(); }
   const dt = frozen ? 0 : frame;
 
@@ -98,6 +121,8 @@ renderer.setAnimationLoop(() => {
   animateFlag(tower, clock.elapsedTime);
   updateTower(frame, clock.elapsedTime);
   updateKnights(dt, scene);
+  updateFx(dt);
+  $('pausebtn').style.display = game.menu || game.over ? 'none' : '';
   updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();

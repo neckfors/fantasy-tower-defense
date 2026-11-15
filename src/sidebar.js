@@ -1,6 +1,7 @@
 import { game } from './game.js';
 import { sfx } from './audio.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
+import { castFx, meteor } from './fx.js';
 
 // In-run Armoury: spend coins (run-only) on consumables and timed buffs. These are different
 // from the level-up upgrades, which are permanent for the run.
@@ -9,7 +10,8 @@ const ITEMS = [
   { icon: '🔧', name: 'Repair Tower', desc: 'Heal 50% of max HP', base: 50, use: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.5)) },
   { icon: '📯', name: 'Rally Cry', desc: '+50% damage for 30s', base: 70, timer: 'rallyT', use: g => (g.rallyT = 30) },
   { icon: '🔥', name: 'Rapid Fire', desc: '+100% fire rate for 30s', base: 70, timer: 'rapidT', use: g => (g.rapidT = 30) },
-  { icon: '☄', name: 'Meteor Strike', desc: 'Smash every enemy in range for 5x damage', base: 90, use: g => enemies.filter(inRange).forEach(e => damageEnemy(e, g.dmg * 5)) },
+  { icon: '☄', name: 'Meteor Strike', desc: 'Meteors rain on every enemy in range for 5x damage', base: 90, can: () => enemies.some(inRange),
+    use: g => enemies.filter(inRange).forEach(e => meteor(e, Math.random() * 0.6, () => damageEnemy(e, g.dmg * 5))) },
   { icon: '❄', name: 'Frost Nova', desc: 'Slow all enemies by 60% for 8s', base: 60, timer: 'frostT', use: g => (g.frostT = 8) },
   { icon: '🧱', name: 'Barricade', desc: 'Shield that absorbs 200 damage', base: 80, use: g => (g.shield = (g.shield || 0) + 200) },
 ].map(it => ({ ...it, count: 0 }));
@@ -30,11 +32,12 @@ const xp = document.getElementById('xp');   // level bar lives under the Armoury
 if (xp) side.appendChild(xp);
 document.body.appendChild(side);
 
-const canBuy = () => !(game.leveling || game.over || game.menu || game.cleared);
+const canBuy = () => !(game.leveling || game.over || game.menu || game.cleared || game.paused);
 function buy(it) {
-  if (!canBuy() || (game.coins || 0) < cost(it)) return;
+  if (!canBuy() || (game.coins || 0) < cost(it) || (it.can && !it.can())) return;
   game.coins -= cost(it); it.count++;
   it.use(game);
+  castFx(it.name);
   sfx('levelup');
 }
 addEventListener('keydown', e => {

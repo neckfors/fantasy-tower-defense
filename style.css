@@ -62,3 +62,17 @@ canvas{display:block}
 #toast{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-size:26px;font-weight:bold;color:#5dffa0;text-shadow:0 2px 6px #000;opacity:0;pointer-events:none;z-index:8}
 #toast.show{animation:toast 1.6s ease-out}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,10px)}15%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-20px)}}
+
+/* overlays always above every bar; pause + chapter select + menu footer */
+#levelup,#gameover,#pause{z-index:30}
+#chsel{z-index:25}
+#bars{z-index:3}
+#hpwrap{z-index:4}
+#bossbars{z-index:4}
+#side{z-index:7}
+#pausebtn{position:fixed;left:76px;bottom:16px;cursor:pointer;color:inherit;z-index:6;font-family:inherit}
+#pbtns,#chlist{display:flex;gap:18px;margin:16px 0;flex-wrap:wrap;justify-content:center}
+.chbtn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.made{margin:22px 0 4px;color:#c9b88a;font-size:15px}
+.menusupport{color:#ffd77a;text-decoration:none;border:1px solid #c9a24a;border-radius:10px;padding:6px 14px;background:#1a1626cc}
+.menusupport:hover{background:#2a2140}

@@ -6,6 +6,7 @@ import { damageTower, addXp, game } from './game.js';
 import { sfx } from './audio.js';
 import { addCoins, rollEmerald } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
+import { pickup } from './fx.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -96,7 +97,9 @@ export function damageEnemy(e, dmg, quiet) {
     game.kills++;
     addXp(e.xp);
     addCoins(Math.ceil(e.xp / 5));
-    rollEmerald(e, n => emeraldToast(n));
+    const coins = Math.min(4, Math.ceil(e.xp / 15));
+    for (let k = 0; k < coins; k++) pickup(e.obj.position, false);
+    rollEmerald(e, n => { emeraldToast(n); for (let k = 0; k < Math.min(n, 3); k++) pickup(e.obj.position, true); });
     removeBar(e);
   }
 }
@@ -111,6 +114,9 @@ export function updateEnemies(dt, scene) {
     const e = enemies[i];
     e.mixer.update(dt);
     if (e.flash > 0 && (e.flash -= dt) <= 0) e.mats.forEach(m => m.emissive.setHex(0));
+    const frozen = game.frostT > 0 && e.state !== 'dead';   // Frost Nova: icy blue tint
+    if (frozen && e.flash <= 0) { e.frz = true; e.mats.forEach(m => m.emissive.setHex(0x1a5a9a)); }
+    else if (!frozen && e.frz) { e.frz = false; if (e.flash <= 0) e.mats.forEach(m => m.emissive.setHex(0)); }
     const p = e.obj.position;
 
     if (e.state === 'walk') {
