@@ -19,7 +19,7 @@ py -3 -I -m http.server 8123
 Open http://localhost:8123 (needs internet for the Three.js CDN). Drag to orbit, scroll to zoom.
 
 ## Credits
-See [CREDITS.md](CREDITS.md) — all models are CC0.
+See [CREDITS.md](CREDITS.md) — all models are CC0. The main menu also lists the model credits.
 
 ## Support
 
