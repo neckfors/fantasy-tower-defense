@@ -9,7 +9,7 @@ const ORIGIN = new THREE.Vector3(0, 13.5, 0);
 const arrowGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.2, 5).rotateX(Math.PI / 2);
 const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffd77a });
 const arrows = [];
-let cooldown = 0;
+let cooldown = 0, ballT = 2;
 
 const aim = e => new THREE.Vector3(e.obj.position.x, e.obj.position.y + 1.3, e.obj.position.z);
 
@@ -28,6 +28,20 @@ export function updateCombat(dt, scene) {
     }
   }
 
+  if (game.ballista && !game.over) {               // ballista
+    ballT -= dt;
+    if (ballT <= 0) {
+      let best = null;
+      for (const e of enemies) if (isAlive(e) && Math.hypot(e.obj.position.x, e.obj.position.z) <= game.range && (!best || e.hp > best.hp)) best = e;
+      if (best) {
+        ballT = 4 / game.ballista;
+        const A = ORIGIN.clone(), B = aim(best);
+        for (let k = 0; k < 3; k++) { const line = new THREE.Line(jagged(A, B), fireMat2); scene.add(line); bolts.push({ line, life: 0.3 }); }
+        burst(B, 0xffe08a, 30, 10, 0.5, 1, -4); ring(best.obj.position, 0xffe08a, 4, 0.4); sfx('hit');
+        damageEnemy(best, dmgNow() * 4);
+      } else ballT = 0.3;
+    }
+  }
   for (const e of enemies) {                       // burning
     if (!e.burn) continue;
     if (!isAlive(e)) { e.burn = null; continue; }
@@ -49,7 +63,9 @@ export function updateCombat(dt, scene) {
     spark(a.mesh.position.x, a.mesh.position.y, a.mesh.position.z, r2(), r2(), r2(), 0xffffff, 0.2);
     if (dist < 0.9) {
       burst(a.mesh.position, col, 12, 6, 0.4, 1, -8);
-      damageEnemy(a.target, dmgNow());
+      const crit = Math.random() < (game.crit || 0);
+      damageEnemy(a.target, dmgNow() * (crit ? 2.5 : 1));
+      if (crit) { ring(a.mesh.position, 0xff4040, 3, 0.3); burst(a.mesh.position, 0xff4040, 16, 8, 0.4, 1, 0); }
       onHit(scene, a.target);
       scene.remove(a.mesh); arrows.splice(i, 1);
     } else {
@@ -74,6 +90,7 @@ function jagged(a, b) {
 }
 const bolts = [];
 const boltMat = new THREE.LineBasicMaterial({ color: 0x9fe0ff });
+const fireMat2 = new THREE.LineBasicMaterial({ color: 0xffe08a });
 const fireMat = new THREE.MeshBasicMaterial({ color: 0xff7a1a });
 
 function onHit(scene, target) {
