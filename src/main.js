@@ -12,6 +12,8 @@ import { applyShop, emeralds, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
 import { initFx, updateFx, shakeStep, fireworks } from './fx.js';
 import { updateKnights } from './knights.js';
+import { updateHelpers } from './helpers.js';
+import { updateZones } from './zones.js';
 import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
 import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
@@ -125,7 +127,9 @@ renderer.setAnimationLoop(() => {
   const dt = frozen ? 0 : frame;
 
   if (game.leveling && !ui.isLevelOpen()) {
-    ui.showLevelUp(pickUpgrades(3), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = false; checkLevel(); });
+    const nPick = 3 + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
+    game.wiseWave = game.wave;
+    ui.showLevelUp(pickUpgrades(nPick), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = false; checkLevel(); }, () => pickUpgrades(nPick));
   }
   if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
 
@@ -135,6 +139,8 @@ renderer.setAnimationLoop(() => {
   animateFlag(tower, clock.elapsedTime);
   updateTower(frame, clock.elapsedTime);
   updateKnights(dt, scene);
+  updateHelpers(dt, scene);
+  updateZones(dt, scene);
   updateFx(dt);
   $('pausebtn').style.display = game.menu || game.over ? 'none' : '';
   updateSidebar();

@@ -24,19 +24,30 @@ export function banner(text) {
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
 
-export function showLevelUp(choices, onPick) {
+export function showLevelUp(choices, onPick, again) {
   levelOpen = true;
   sfx('levelup'); levelFx();
   $('lvltitle').textContent = `Level ${game.level}!`;
+  let left = game.rerolls || 0;
   const box = $('cards');
-  box.innerHTML = '';
-  choices.forEach(u => {
-    const c = document.createElement('button');
-    c.className = 'card';
-    c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>`;
-    c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
-    box.appendChild(c);
-  });
+  const render = list => {
+    box.innerHTML = '';
+    list.forEach(u => {
+      const c = document.createElement('button');
+      c.className = 'card';
+      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>`;
+      c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
+      box.appendChild(c);
+    });
+    if (left > 0) {
+      const r = document.createElement('button');
+      r.className = 'card'; r.style.width = '120px'; r.style.justifyContent = 'center';
+      r.innerHTML = `<div class="ic">🔄</div><b>Reroll</b><span>${left} left</span>`;
+      r.onclick = () => { left--; sfx('levelup'); render(again()); };
+      box.appendChild(r);
+    }
+  };
+  render(choices);
   $('levelup').hidden = false;
 }
 

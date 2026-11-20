@@ -1,3 +1,4 @@
+import { MORE } from './upgrades-more.js';
 // Shared game state + rules (no rendering here)
 export const game = {
   wave: 0, towerHp: 500, maxHp: 500,
@@ -18,7 +19,7 @@ export const dmgNow = () => game.dmg * (game.rallyT > 0 ? 1.5 : 1);   // Rally C
 export const rateNow = () => game.rate * (game.rapidT > 0 ? 2 : 1);   // Rapid Fire buff
 
 export function addXp(n) {
-  game.xp += n * (game.xpMul || 1);
+  game.xp += n * (game.xpMul || 1) * (Math.random() < (game.lucky || 0) ? 2 : 1);
   checkLevel();
 }
 
@@ -31,7 +32,7 @@ export function checkLevel() {
   }
 }
 
-export const UPGRADES = [
+export const UPGRADES = [...MORE,
   { icon: '🏹', name: 'Sharper Arrows', desc: '+25% damage', apply: g => (g.dmg *= 1.25) },
   { icon: '⚡', name: 'Quick Draw', desc: '+20% fire rate', apply: g => (g.rate *= 1.2) },
   { icon: '🔭', name: 'Eagle Eye', desc: '+12% range', apply: g => (g.range *= 1.12) },
@@ -46,7 +47,7 @@ export const UPGRADES = [
 ];
 
 export function pickUpgrades(n = 3) {
-  const pool = [...UPGRADES];
+  const pool = UPGRADES.filter(u => !u.max || (game.picks[u.name] || 0) < u.max);
   const out = [];
   while (out.length < n && pool.length) out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
   return out;

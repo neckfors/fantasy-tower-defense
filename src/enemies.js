@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { SPAWN_R, TOWER_R } from './world.js';
-import { damageTower, addXp, game } from './game.js';
+import { damageTower, addXp, game, dmgNow } from './game.js';
 import { sfx } from './audio.js';
 import { addCoins, rollEmerald } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
@@ -95,6 +95,10 @@ export function damageEnemy(e, dmg, quiet) {
     const a = e.mixer.clipAction(e.clip(e.t.anims?.die ?? 'Death_A'));
     a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; a.reset().play();
     game.kills++;
+    if (e.poison) for (const o of enemies) {          // Poison Tips: poison spreads to neighbours
+      if (o === e || !isAlive(o) || Math.hypot(o.obj.position.x - e.obj.position.x, o.obj.position.z - e.obj.position.z) > 7) continue;
+      const q = o.poison || (o.poison = { n: 0, t: 0, acc: 0 }); q.n = Math.min(5, q.n + Math.ceil(e.poison.n / 2)); q.t = 4;
+    }
     addXp(e.xp);
     addCoins(Math.ceil(e.xp / 5));
     const coins = Math.min(4, Math.ceil(e.xp / 15));
@@ -129,12 +133,15 @@ export function updateEnemies(dt, scene) {
         e.walk.fadeOut(0.2);
         e.mixer.clipAction(e.clip(e.t.atk)).reset().fadeIn(0.2).play();
       } else {
-        const sp = e.speed * (game.frostT > 0 ? 0.4 : 1);   // Frost Nova slow
+        let slow = game.frostT > 0 ? 0.4 : 1;   // Frost Nova slow
+        if (e.slowT > 0) { e.slowT -= dt; slow *= 1 - 0.3 * (game.frostA || 0); }   // Frost Arrows
+        if (game.blizzard && d <= game.range) slow *= 1 - 0.15 * game.blizzard;      // Blizzard
+        const sp = e.speed * slow;
         p.x -= (p.x / d) * sp * dt;   // straight line to the tower
         p.z -= (p.z / d) * sp * dt;
       }
     } else if (e.state === 'hit') {
-      if ((e.atk += dt) >= 1) { e.atk = 0; const sh = game.shield > 0; damageTower(e.t.dmg); sfx(sh ? 'shieldhit' : 'hurt'); if (!sh) hurtFx(); }
+      if ((e.atk += dt) >= 1) { e.atk = 0; const sh = game.shield > 0; damageTower(e.t.dmg); sfx(sh ? 'shieldhit' : 'hurt'); if (!sh) hurtFx(); if (game.thorns) damageEnemy(e, dmgNow() * 0.8 * game.thorns); }
     } else {                               // dead: lie there, then sink away
       e.timer += dt;
       if (e.t.fly && p.y > 0) p.y = Math.max(0, p.y - dt * 8);   // dragons crash to the ground
