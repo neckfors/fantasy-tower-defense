@@ -13,4 +13,5 @@ export const MORE = [
   { icon: '🍀', name: 'Lucky Charm', desc: '+10% chance for double XP from a kill', max: 5, apply: g => (g.lucky = (g.lucky || 0) + 0.1) },
   { icon: '🔄', name: 'Reroll', desc: 'Reroll your level-up choices once per level', max: 2, apply: g => (g.rerolls = (g.rerolls || 0) + 1) },
   { icon: '🧠', name: 'Wise Tower', desc: 'Your first level-up each wave offers 1 extra choice', max: 2, apply: g => (g.wise = (g.wise || 0) + 1) },
+  { icon: '🌊', name: 'Moat', desc: 'A water moat rings the tower and slows walking enemies (3 levels: slower and wider)', max: 3, apply: g => (g.moat = (g.moat || 0) + 1) },
 ];

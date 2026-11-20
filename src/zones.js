@@ -24,7 +24,26 @@ function buildSpikes(scene) {
   spikeN = game.spikes;
 }
 
+let moatMesh = null, moatN = 0;
+function buildMoat(scene) {
+  if (moatMesh) scene.remove(moatMesh);
+  game.moatIn = 9; game.moatOut = 9 + 2 + game.moat * 1.5;
+  moatMesh = new THREE.Mesh(new THREE.RingGeometry(game.moatIn, game.moatOut, 64),
+    new THREE.MeshBasicMaterial({ color: 0x2a7fd0, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }));
+  moatMesh.rotation.x = -Math.PI / 2; moatMesh.position.y = 0.09;
+  scene.add(moatMesh);
+  moatN = game.moat;
+}
+
 export function updateZones(dt, scene) {
+  if (game.moat) {
+    if (moatN !== game.moat) buildMoat(scene);
+    moatMesh.material.opacity = 0.55 + Math.sin(performance.now() / 400) * 0.08;
+    if (Math.random() < dt * 30) {
+      const a = Math.random() * Math.PI * 2, r = game.moatIn + Math.random() * (game.moatOut - game.moatIn);
+      spark(Math.cos(a) * r, 0.2, Math.sin(a) * r, 0, 1.2, 0, 0xbfe6ff, 0.5);
+    }
+  }
   if (game.blizzard) {
     const n = dt * 60 * game.blizzard, c = Math.min(30, Math.floor(n) + (Math.random() < n % 1 ? 1 : 0));
     for (let i = 0; i < c; i++) {
