@@ -32,7 +32,7 @@ function buildSpikes(scene) {
 let moatMesh = null, moatN = 0;
 function buildMoat(scene) {
   if (moatMesh) scene.remove(moatMesh);
-  const col = tier(game.moat, 0x2a7fd0, GOLD, DIAMOND);
+  const col = tier(game.moat, 0x2a7fd0, 0x2fc46a, 0x9a4cff);
   game.moatIn = 9; game.moatOut = 9 + 2 + game.moat * 1.5;
   moatMesh = new THREE.Mesh(new THREE.RingGeometry(game.moatIn, game.moatOut, 64),
     new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }));
@@ -47,7 +47,7 @@ export function updateZones(dt, scene) {
     moatMesh.material.opacity = 0.55 + Math.sin(performance.now() / 400) * 0.08;
     if (Math.random() < dt * 30) {
       const a = Math.random() * Math.PI * 2, r = game.moatIn + Math.random() * (game.moatOut - game.moatIn);
-      spark(Math.cos(a) * r, 0.2, Math.sin(a) * r, 0, 1.2, 0, tier(game.moat, 0xbfe6ff, 0xfff0a0, 0xffffff), 0.5);
+      spark(Math.cos(a) * r, 0.2, Math.sin(a) * r, 0, 1.2, 0, tier(game.moat, 0xbfe6ff, 0xc8ffd8, 0xe6d0ff), 0.5);
     }
   }
   if (game.blizzard) {

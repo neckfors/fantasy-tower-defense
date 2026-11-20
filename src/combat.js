@@ -43,6 +43,7 @@ export function updateCombat(dt, scene) {
       } else ballT = 0.3;
     }
   }
+  teslaStep(dt, scene);
   for (const e of enemies) {                       // poison
     const p = e.poison;
     if (!p) continue;
@@ -128,24 +129,58 @@ function onHit(scene, target) {
       at = best;
     }
   }
-  let from = target;
-  const hit = new Set([target]);
-  for (let n = 0; n < (game.chain || 0); n++) {
-    let best = null, bd = 9;
+}
+
+// Tesla Coil: a coil on top of the tower zaps the nearest enemy and chains on to neighbours
+let coil = null, coilBall = null, coilL = 0, teslaT = 1;
+const COIL_POS = new THREE.Vector3(1.9, 13.2, -1.2);
+function buildCoil(scene) {
+  if (coil) scene.remove(coil);
+  coil = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({ color: tier(game.tesla, 0x8a6a3a, GOLD, DIAMOND), metalness: 0.7, roughness: 0.35 });
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 2.2, 10), metal); col.position.y = 1.1;
+  coil.add(col);
+  for (let i = 0; i < 3; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.55 - i * 0.08, 0.1, 6, 14), metal); r.rotation.x = Math.PI / 2; r.position.y = 0.6 + i * 0.5; coil.add(r); }
+  coilBall = new THREE.Mesh(new THREE.SphereGeometry(0.55, 14, 10), new THREE.MeshBasicMaterial({ color: tier(game.tesla, 0x9fe0ff, 0xfff0a0, 0xffffff) }));
+  coilBall.position.y = 2.5;
+  coil.add(coilBall);
+  coil.position.copy(COIL_POS);
+  scene.add(coil);
+  coilL = game.tesla;
+}
+function teslaStep(dt, scene) {
+  if (!game.tesla) return;
+  if (coilL !== game.tesla) buildCoil(scene);
+  coilBall.scale.setScalar(1 + Math.sin(performance.now() / 120) * 0.15);
+  if (Math.random() < dt * 6) { const p = COIL_POS; spark(p.x + r2() * 0.4, p.y + 2.5 + r2() * 0.4, p.z + r2() * 0.4, r2() * 2, r2() * 2, r2() * 2, 0xcff4ff, 0.3); }
+  if ((teslaT -= dt) > 0 || game.over) return;
+  let first = null, bd = game.range;
+  for (const e of enemies) {
+    if (!isAlive(e)) continue;
+    const d = Math.hypot(e.obj.position.x, e.obj.position.z);
+    if (d < bd) { bd = d; first = e; }
+  }
+  if (!first) { teslaT = 0.3; return; }
+  teslaT = 2.2 - 0.4 * game.tesla;                 // 1.8 / 1.4 / 1.0 s
+  const col = tier(game.tesla, 0x9fe0ff, GOLD, DIAMOND);
+  boltMat.color.setHex(col);
+  let from = new THREE.Vector3(COIL_POS.x, COIL_POS.y + 2.5, COIL_POS.z), target = first, mult = 1.5;
+  const hit = new Set();
+  for (let n = 0; n <= 1 + game.tesla && target; n++) {   // first zap + 2/3/4 chains
+    hit.add(target);
+    damageEnemy(target, dmgNow() * mult);
+    const B = aim(target);
+    for (let k = 0; k < 2; k++) { const line = new THREE.Line(jagged(from, B), boltMat); scene.add(line); bolts.push({ line, life: 0.25 }); }
+    burst(B, col, 14, 7, 0.4, 0, 0); sfx('zap'); ring(target.obj.position, col, 2.5, 0.3);
+    for (let k = 0; k < 10; k++) { const p = from.clone().lerp(B, Math.random()); spark(p.x, p.y, p.z, r2() * 2, r2() * 2, r2() * 2, 0xcff4ff, 0.3); }
+    from = B; mult = 0.7;
+    let next = null, nd = 10;
     for (const e of enemies) {
       if (hit.has(e) || !isAlive(e)) continue;
-      const d = Math.hypot(e.obj.position.x - from.obj.position.x, e.obj.position.z - from.obj.position.z);
-      if (d < bd) { bd = d; best = e; }
+      const d = Math.hypot(e.obj.position.x - target.obj.position.x, e.obj.position.z - target.obj.position.z);
+      if (d < nd) { nd = d; next = e; }
     }
-    if (!best) break;
-    hit.add(best);
-    damageEnemy(best, dmgNow() * 0.5);
-    const A = aim(from), B = aim(best);
-    for (let k = 0; k < 2; k++) { const line = new THREE.Line(jagged(A, B), boltMat); scene.add(line); bolts.push({ line, life: 0.22 }); }
-    burst(B, 0x9fe0ff, 14, 7, 0.4, 0, 0); sfx('zap');
-    for (let k = 0; k < 10; k++) { const p = A.clone().lerp(B, Math.random()); spark(p.x, p.y, p.z, r2() * 2, r2() * 2, r2() * 2, 0xcff4ff, 0.3); }
-    ring(best.obj.position, 0x9fe0ff, 2.5, 0.3);
-    from = best;
+    target = next;
   }
 }
 
