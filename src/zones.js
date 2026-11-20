@@ -29,21 +29,22 @@ function buildSpikes(scene) {
   spikeN = game.spikes;
 }
 
-let moatMesh = null, moatN = 0;
+let moatMesh = null, moatN = 0, moatR = 0;
 function buildMoat(scene) {
   if (moatMesh) scene.remove(moatMesh);
   const col = tier(game.moat, 0x2a7fd0, 0x2fc46a, 0x9a4cff);
-  game.moatIn = 9; game.moatOut = 9 + 2 + game.moat * 1.5;
+  const w = 2 + game.moat * 1.5;                   // band centred on the range ring
+  game.moatIn = game.range - w / 2; game.moatOut = game.range + w / 2;
   moatMesh = new THREE.Mesh(new THREE.RingGeometry(game.moatIn, game.moatOut, 64),
     new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }));
   moatMesh.rotation.x = -Math.PI / 2; moatMesh.position.y = 0.09;
   scene.add(moatMesh);
-  moatN = game.moat;
+  moatN = game.moat; moatR = game.range;
 }
 
 export function updateZones(dt, scene) {
   if (game.moat) {
-    if (moatN !== game.moat) buildMoat(scene);
+    if (moatN !== game.moat || moatR !== game.range) buildMoat(scene);
     moatMesh.material.opacity = 0.55 + Math.sin(performance.now() / 400) * 0.08;
     if (Math.random() < dt * 30) {
       const a = Math.random() * Math.PI * 2, r = game.moatIn + Math.random() * (game.moatOut - game.moatIn);
