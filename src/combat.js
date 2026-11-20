@@ -4,6 +4,7 @@ import { sfx } from './audio.js';
 import { sorcererCast } from './tower-fx.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
 import { burst, spark, ring } from './fx.js';
+import { tier, GOLD, DIAMOND } from './upgrades-more.js';
 
 const ORIGIN = new THREE.Vector3(0, 13.5, 0);
 const arrowGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.2, 5).rotateX(Math.PI / 2);
@@ -123,7 +124,7 @@ function onHit(scene, target) {
       seen.add(best);
       damageEnemy(best, dmgNow() * 0.6);
       const line = new THREE.Line(jagged2(aim(at), aim(best)), ricMat); scene.add(line); bolts.push({ line, life: 0.2 });
-      burst(aim(best), 0xffb84a, 10, 6, 0.3, 0, 0);
+      burst(aim(best), tier(game.ricochet, 0xffb84a, GOLD, DIAMOND), 10, 6, 0.3, 0, 0);
       at = best;
     }
   }
@@ -151,6 +152,8 @@ function onHit(scene, target) {
 let shotN = 0;
 export function fireArrow(scene, target, o = {}) {
   const origin = o.origin || ORIGIN;
+  ricMat.color.setHex(tier(game.ricochet, 0xffb84a, GOLD, DIAMOND));
+  sniperMat.color.setHex(tier(game.sniper, 0xffffff, GOLD, DIAMOND));
   const snipe = !o.noSnipe && game.sniper && ++shotN % Math.max(3, 7 - game.sniper) === 0;
   const mesh = new THREE.Mesh(arrowGeo, snipe ? sniperMat : game.fire ? fireMat : arrowMat);
   mesh.position.copy(origin);

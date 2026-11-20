@@ -41,8 +41,8 @@ export const UPGRADES = [...MORE,
   { icon: '👻', name: 'Shadow Knights', desc: '+1 shadow knight that leaves the tower and fights enemies', apply: g => (g.knights = (g.knights || 0) + 1) },
   { icon: '🌩', name: 'Chain Lightning', desc: 'Arrows zap +1 nearby enemy for 50% damage', apply: g => (g.chain = (g.chain || 0) + 1) },
   { icon: '🔥', name: 'Fire Arrows', desc: 'Arrows set enemies on fire (burn damage over 3s)', apply: g => (g.fire = (g.fire || 0) + 1) },
-  { icon: '🏰', name: 'Ballista', desc: 'A heavy bolt hits the toughest enemy for 4x damage every 4s (stacks faster)', apply: g => (g.ballista = (g.ballista || 0) + 1) },
-  { icon: '💥', name: 'Critical Strikes', desc: '+15% chance for arrows to deal 2.5x damage', apply: g => (g.crit = (g.crit || 0) + 0.15) },
+  { icon: '🏰', name: 'Ballista', desc: 'A heavy bolt hits the toughest enemy for 4x damage every 4s (stacks faster)', max: 3, apply: g => (g.ballista = (g.ballista || 0) + 1) },
+  { icon: '💥', name: 'Critical Strikes', desc: '+15% chance for arrows to deal 2.5x damage', max: 3, apply: g => (g.crit = (g.crit || 0) + 0.15) },
   { icon: '❤', name: 'Mending Stones', desc: 'Heal 40% of max HP', apply: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.4)) },
 ];
 

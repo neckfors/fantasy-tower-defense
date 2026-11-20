@@ -134,7 +134,7 @@ export function updateEnemies(dt, scene) {
         e.mixer.clipAction(e.clip(e.t.atk)).reset().fadeIn(0.2).play();
       } else {
         let slow = game.frostT > 0 ? 0.4 : 1;   // Frost Nova slow
-        if (e.slowT > 0) { e.slowT -= dt; slow *= 1 - 0.3 * (game.frostA || 0); }   // Frost Arrows
+        if (e.slowT > 0) { e.slowT -= dt; slow *= 1 - 0.25 * (game.frostA || 0); }   // Frost Arrows
         if (game.blizzard && d <= game.range) slow *= 1 - 0.15 * game.blizzard;      // Blizzard
         if (game.moat && !e.t.fly && d >= game.moatIn && d <= game.moatOut) slow *= 1 - (0.15 + 0.15 * game.moat);   // Moat: 30/45/60%
         const sp = e.speed * slow;

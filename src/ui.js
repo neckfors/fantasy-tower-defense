@@ -35,7 +35,7 @@ export function showLevelUp(choices, onPick, again) {
     list.forEach(u => {
       const c = document.createElement('button');
       c.className = 'card';
-      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>`;
+      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${u.max ? `<span>Level ${(game.picks[u.name] || 0) + 1} / ${u.max}</span>` : ''}`;
       c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
       box.appendChild(c);
     });
