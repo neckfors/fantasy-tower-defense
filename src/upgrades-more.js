@@ -1,6 +1,8 @@
 // Colour by upgrade level: 1 = base, 2 = gold, 3 = diamond.
 export const tier = (lvl, a, b, c) => (lvl >= 3 ? c : lvl === 2 ? b : a);
 export const GOLD = 0xffc83a, DIAMOND = 0x8ff3ff;
+// Upgrade level shown as stars: n filled out of max.
+export const stars = (n, max) => `<span class="stars" aria-label="Level ${n} of ${max}">${'★'.repeat(n)}<i>${'☆'.repeat(max - n)}</i></span>`;
 // Extra level-up upgrades. `max` = how many times one can be picked in a run.
 export const MORE = [
   { icon: '🧊', name: 'Frost Arrows', desc: 'Arrows slow enemies by 25% per level for 2s', max: 3, apply: g => (g.frostA = (g.frostA || 0) + 1) },

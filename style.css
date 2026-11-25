@@ -22,6 +22,7 @@ canvas{display:block}
 .card{width:190px;padding:18px 14px;background:linear-gradient(#2a2140,#1a1626);border:2px solid #c9a24a;border-radius:14px;color:#e8dcc0;font-family:inherit;font-size:15px;cursor:pointer;display:flex;flex-direction:column;gap:8px;align-items:center;transition:transform .15s,box-shadow .15s}
 .card:hover{transform:translateY(-6px);box-shadow:0 0 24px #c9a24a88}
 .card .ic{font-size:44px}.card b{color:#ffd77a;font-size:18px}.card span{opacity:.85}
+.card .stars{opacity:1;color:#ffc83a;font-size:22px;letter-spacing:3px;line-height:1}.stars i{font-style:normal;opacity:.5}
 #load{position:fixed;inset:0;display:grid;place-items:center;background:#0b0d14;font-size:22px;transition:opacity .6s}
 #menu,#chapter{z-index:20}
 #chapter p{max-width:420px;text-align:center}

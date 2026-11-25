@@ -1,6 +1,7 @@
 import { waveFx, levelFx } from './fx.js';
 import { game } from './game.js';
 import { sfx } from './audio.js';
+import { stars } from './upgrades-more.js';
 import { waveLabel, recordEndless, load } from './modes.js';
 
 const $ = id => document.getElementById(id);
@@ -35,7 +36,7 @@ export function showLevelUp(choices, onPick, again) {
     list.forEach(u => {
       const c = document.createElement('button');
       c.className = 'card';
-      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${u.max ? `<span>Level ${(game.picks[u.name] || 0) + 1} / ${u.max}</span>` : ''}`;
+      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${u.max ? stars((game.picks[u.name] || 0) + 1, u.max) : ''}`;
       c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
       box.appendChild(c);
     });

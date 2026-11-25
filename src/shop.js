@@ -1,4 +1,5 @@
 import { game } from './game.js';
+import { stars } from './upgrades-more.js';
 import { resetArmoury } from './sidebar.js';
 
 // Coins = this run only (spent in the Armoury sidebar). Emeralds = rare drops, saved forever,
@@ -64,7 +65,7 @@ export function renderShop(el, onChange) {
     const b = document.createElement('button');
     b.className = 'card shopitem';
     b.disabled = maxed || emeralds() < c;
-    b.innerHTML = `<div class="ic">${it.icon}</div><b>${it.name}</b><span>${it.desc}</span><span class="lv">${it.max > 1 ? `Level ${l}/${it.max}` : (l ? 'Owned' : '')}</span><span class="pr">${maxed ? 'MAX' : `💎 ${c}`}</span>`;
+    b.innerHTML = `<div class="ic">${it.icon}</div><b>${it.name}</b><span>${it.desc}</span>${stars(l, it.max)}<span class="pr">${maxed ? 'MAX' : `💎 ${c}`}</span>`;
     b.onclick = () => { if (buy(it)) { renderShop(el, onChange); onChange?.(); } };
     list.appendChild(b);
   }
