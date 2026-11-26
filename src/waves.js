@@ -2,6 +2,7 @@ import { game } from './game.js';
 import { enemies, isAlive, spawnEnemy, pickType, TYPES } from './enemies.js';
 import { openPortals, closePortals, randomPortal, bossPortal } from './portals.js';
 import { startCutscene } from './cutscene.js';
+import { bossFor, bossReady, loadBoss } from './bosses.js';
 
 const w = { toSpawn: 0, spawnT: 0, breakT: 2, running: false, boss: false, squad: 0, door: null };
 export const isBossWave = n => n % 10 === 0;
@@ -9,7 +10,8 @@ export const isBossWave = n => n % 10 === 0;
 export function updateWaves(dt, scene, ui) {
   if (game.cine || game.leveling || game.bossFallen) return;   // the wave can't move on or end behind these
   if (!w.running) {
-    if ((w.breakT -= dt) <= 0) {
+    const next = game.wave + 1;
+    if ((w.breakT -= dt) <= 0 && (!isBossWave(next) || bossReady(bossFor(next)))) {
       game.wave++;
       w.toSpawn = 5 + game.wave * 3;
       w.spawnT = 0;
@@ -17,6 +19,7 @@ export function updateWaves(dt, scene, ui) {
       w.boss = isBossWave(game.wave);
       w.squad = 0;
       openPortals(game.wave, w.boss);
+      if (isBossWave(game.wave + 1)) loadBoss(bossFor(game.wave + 1));   // fetch the next boss in good time
       if (!w.boss) ui.banner(`Wave ${game.wave}`);          // boss waves get the cutscene instead
     }
     return;

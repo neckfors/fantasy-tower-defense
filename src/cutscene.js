@@ -51,25 +51,26 @@ export function startCutscene(boss, portal) {
 
   const eyes = [-1, 1].map(side => {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTexture(), color: new THREE.Color(0xffd23a).multiplyScalar(3), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
-    s.position.set(side * 0.2, 1.62, 0.55);
-    s.scale.setScalar(0.28);
+    s.position.set(side * 0.2, 1.62, 0.55);                // KayKit head; special bosses follow their own
+    s.scale.setScalar(boss.t.eyes ? 0.2 : 0.28);
     s.visible = false;
     boss.obj.add(s);
     return s;
   });
+  const head = (boss.t.head ?? []).map(n => boss.obj.getObjectByName(n)).filter(Boolean);
   const crack = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ map: crackTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
   crack.position.copy(door).addScaledVector(u, -WALK).setY(0.2);
   scene.add(crack);
 
   cur = {
-    boss, portal, u, from, colors, eyes, crack, t: 0, done: {},
+    boss, portal, u, from, colors, eyes, head, crack, t: 0, done: {},
     camPos: camera.position.clone(), camTarget: controls.target.clone(), fov: camera.fov,
     closePos: door.clone().addScaledVector(u, -27).setY(8),
     closeTarget: door.clone().addScaledVector(u, -4).setY(5.2),
   };
   q('h1').textContent = boss.t.name.toUpperCase();
-  q('p').textContent = `Breaker of Walls · ${waveLabel()}`;
+  q('p').textContent = `${boss.t.title ?? 'Breaker of Walls'} · ${waveLabel()}`;
   el.hidden = false;
   el.className = '';
   void el.offsetWidth;                          // restart the CSS animations
@@ -111,6 +112,16 @@ const clamp = x => Math.min(1, Math.max(0, x));
 const ease = x => { x = clamp(x); return x * x * (3 - 2 * x); };
 const p = new THREE.Vector3();
 
+const q1 = new THREE.Vector3();
+function followHead({ boss, head, eyes }) {
+  boss.obj.updateMatrixWorld(true);
+  p.set(0, 0, 0);
+  head.forEach(bone => p.add(bone.getWorldPosition(q1)));
+  boss.obj.worldToLocal(p.divideScalar(head.length));
+  const [x, y, z] = boss.t.eyes;
+  eyes.forEach((s, i) => s.position.set(p.x + (i ? x : -x), p.y + y, p.z + z));
+}
+
 // called every drawn frame with real time (the game speed does not apply)
 export function updateCutscene(dt) {
   const c = cur; if (!c) return;
@@ -147,7 +158,7 @@ export function updateCutscene(dt) {
   once('stomp', STOMP, () => {
     const at = b.obj.position;
     b.walk.stop();
-    const roar = b.clip('Cheer') || b.clip(b.t.atk);
+    const roar = (b.t.roar ? b.clip(b.t.roar) : b.clip('Cheer')) || b.clip(b.t.atk);
     b.mixer.clipAction(roar).reset().play();
     ring(at, 0xffc14a, 18, 0.9, 0.3); ring(at, 0xff4020, 12, 0.6, 0.4);
     burst(p.copy(at).setY(1), 0xff8a3a, 60, 14, 0.9, 1, -9);
@@ -155,6 +166,7 @@ export function updateCutscene(dt) {
     c.portal.flash = 1;
   });
   b.mixer.update(t >= STEP ? dt : 0);
+  if (c.head.length) followHead(c);
 
   if (t >= END) finish();
 }

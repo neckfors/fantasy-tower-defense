@@ -12,6 +12,7 @@ import { sfx } from './audio.js';
 import { addCoins, rollEmerald, emeralds } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
 import { pickup, deathFx, hurtFx, shake } from './fx.js';
+import { makeBoss, bossFor } from './bosses.js';
 
 // hp/dmg/xp are multipliers; keep = weapon meshes left visible; stop = distance from tower where it attacks
 export const TYPES = {
@@ -49,17 +50,20 @@ export function pickType(wave) {
 const free = obj => obj.traverse(n => n.skeleton?.dispose());
 const EMERGE = 0.7;                       // seconds spent coming through a door
 export function spawnEnemy(scene, typeKey, baseHp, portal = randomPortal()) {
-  const t = TYPES[typeKey];
+  let t = TYPES[typeKey];
+  const special = typeKey === 'boss' ? makeBoss(bossFor(game.wave), t) : null;   // each chapter's own boss
   const [file, tint] = t.files[Math.floor(Math.random() * t.files.length)];
-  const src = models[file];
+  const src = special ? special.src : models[file];
   const wanted = name => BODY.test(name) || t.keep.includes(name);
-  const obj = clone(t.raw ? src.scene : mergedModel(`${file}|${t.keep}`, src.scene, wanted));
+  if (special) t = special.t;
+  const obj = special ? special.obj : clone(t.raw ? src.scene : mergedModel(`${file}|${t.keep}`, src.scene, wanted));
   const mats = [];
   obj.traverse(n => {
     if (!n.isMesh) return;
     n.castShadow = true; n.layers.enable(1);
     n.material = n.material.clone();
-    if (t.raw) {                       // non-KayKit model: keep its colours, just clone materials for hit flash
+    if (special) n.frustumCulled = false;     // their stored bounds don't follow the animation
+    else if (t.raw) {                       // non-KayKit model: keep its colours, just clone materials for hit flash
       n.material.metalness = 0;         // metallic look is black without an environment map
       n.material.roughness = 0.8;
       if (/^Dragon_[134]$/.test(n.name)) n.material.color.lerp(new THREE.Color(0xc23b2a), 0.65);   // model is near-black: make it red
@@ -164,7 +168,7 @@ export function updateEnemies(dt, scene) {
 
     if (e.state === 'walk') {
       const d = Math.hypot(p.x, p.z);
-      if (d <= (e.t.stop ?? TOWER_R + 1.3 + e.size * 0.5)) {
+      if (d <= (e.t.stop ?? TOWER_R + 1.3 + e.size * 0.5 + (e.t.gap ?? 0))) {
         e.state = 'hit';
         e.walk.fadeOut(0.2);
         e.mixer.clipAction(e.clip(e.t.atk)).reset().fadeIn(0.2).play();
