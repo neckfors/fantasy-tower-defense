@@ -6,7 +6,7 @@ box.id = 'nums';
 document.body.append(box);
 const live = [];
 const v = new THREE.Vector3();
-const LIFE = 0.9, MAX = 70;
+const LIFE = 0.9, MAX = 40;
 
 export function popNumber(pos, amount, kind = 'hit', key = null) {
   const old = key && live.find(o => o.key === key && o.kind === kind && o.t < 0.35);

@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { TOWER_R } from './world.js';
 import { randomPortal, stepThrough } from './portals.js';
+import { mergedModel } from './merge.js';
 import { popNumber } from './numbers.js';
 import { lob } from './shots.js';
 import { poisonBurst } from './combat.js';
@@ -44,29 +45,26 @@ export function pickType(wave) {
   return 'peasant';
 }
 
+// every enemy gets its own bone textures on the graphics card; give them back when it goes
+const free = obj => obj.traverse(n => n.skeleton?.dispose());
 const EMERGE = 0.7;                       // seconds spent coming through a door
 export function spawnEnemy(scene, typeKey, baseHp, portal = randomPortal()) {
   const t = TYPES[typeKey];
   const [file, tint] = t.files[Math.floor(Math.random() * t.files.length)];
   const src = models[file];
-  const obj = clone(src.scene);
+  const wanted = name => BODY.test(name) || t.keep.includes(name);
+  const obj = clone(t.raw ? src.scene : mergedModel(`${file}|${t.keep}`, src.scene, wanted));
   const mats = [];
   obj.traverse(n => {
     if (!n.isMesh) return;
-    if (t.raw) {                       // non-KayKit model: keep as is, just clone materials for hit flash
-      n.castShadow = true; n.layers.enable(1);
-      n.material = n.material.clone();
+    n.castShadow = true; n.layers.enable(1);
+    n.material = n.material.clone();
+    if (t.raw) {                       // non-KayKit model: keep its colours, just clone materials for hit flash
       n.material.metalness = 0;         // metallic look is black without an environment map
       n.material.roughness = 0.8;
       if (/^Dragon_[134]$/.test(n.name)) n.material.color.lerp(new THREE.Color(0xc23b2a), 0.65);   // model is near-black: make it red
-      if (n.material.emissive) mats.push(n.material);
-      return;
-    }
-    if (!BODY.test(n.name) && !t.keep.includes(n.name)) { n.visible = false; return; }
-    n.castShadow = true; n.layers.enable(1);
-    n.material = n.material.clone();
-    n.material.color.setHex(tint);
-    mats.push(n.material);
+    } else n.material.color.setHex(tint);
+    if (n.material.emissive) mats.push(n.material);
   });
   const size = rnd(t.scale);
   obj.scale.setScalar(size * 0.3);
@@ -119,7 +117,7 @@ export function damageEnemy(e, dmg, quiet, kind = 'hit') {
 }
 
 export function clearEnemies(scene) {
-  enemies.forEach(e => { scene.remove(e.obj); removeBar(e); });
+  enemies.forEach(e => { scene.remove(e.obj); free(e.obj); removeBar(e); });
   enemies.length = 0;
 }
 
@@ -186,7 +184,7 @@ export function updateEnemies(dt, scene) {
       e.timer += dt;
       if (e.t.fly && p.y > 0) p.y = Math.max(0, p.y - dt * 8);   // dragons crash to the ground
       if (e.timer > 1.5) p.y -= dt * 0.6;
-      if (e.timer > 3.5) { scene.remove(e.obj); enemies.splice(i, 1); }
+      if (e.timer > 3.5) { scene.remove(e.obj); free(e.obj); enemies.splice(i, 1); }
     }
   }
 }

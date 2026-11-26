@@ -8,17 +8,19 @@ const $ = id => document.getElementById(id);
 let levelOpen = false;
 export const isLevelOpen = () => levelOpen;
 
+const shown = {};
+const text = (id, v) => { if (shown[id] !== v) $(id).textContent = shown[id] = v; };
+const width = (id, v) => { if (shown[id] !== v) $(id).style.width = shown[id] = v; };
 export function updateHud() {
-  $('wave').textContent = `⚔ ${waveLabel()}`;
-  $('kills').textContent = `☠ ${game.kills}`;
-  $('goldhud').textContent = `🪙 ${game.coins || 0}`;
-  const gems = `💎 ${game.gems || 0}`, found = game.runEmeralds ? `+${game.runEmeralds} this run` : 'emeralds';
-  if ($('gems').textContent !== gems) $('gems').textContent = gems;
-  if ($('gemrun').textContent !== found) $('gemrun').textContent = found;
-  $('hpfill').style.width = `${(game.towerHp / game.maxHp) * 100}%`;
-  $('hptext').textContent = `${Math.ceil(game.towerHp)} / ${game.maxHp}`;
-  $('xpfill').style.width = `${(game.xp / game.xpNeed) * 100}%`;
-  $('lvl').textContent = `Level ${game.level}`;
+  text('wave', `⚔ ${waveLabel()}`);
+  text('kills', `☠ ${game.kills}`);
+  text('goldhud', `🪙 ${game.coins || 0}`);
+  text('gems', `💎 ${game.gems || 0}`);
+  text('gemrun', game.runEmeralds ? `+${game.runEmeralds} this run` : 'emeralds');
+  width('hpfill', `${((game.towerHp / game.maxHp) * 100).toFixed(1)}%`);
+  text('hptext', `${Math.ceil(game.towerHp)} / ${game.maxHp}`);
+  width('xpfill', `${((game.xp / game.xpNeed) * 100).toFixed(1)}%`);
+  text('lvl', `Level ${game.level}`);
 }
 
 export function banner(text) {

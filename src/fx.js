@@ -49,8 +49,9 @@ export function burst(p, color, count = 16, speed = 6, life = 0.6, up = 0, g = -
     spark(p.x, p.y, p.z, d.x, d.y + up, d.z, color, life * (0.6 + Math.random() * 0.6), g);
   }
 }
+const ringGeo = new THREE.RingGeometry(0.88, 1, 48).rotateX(-Math.PI / 2);
 export function ring(p, color, maxR, time = 0.7, y = 0.2) {
-  const m = new THREE.Mesh(new THREE.RingGeometry(0.88, 1, 64).rotateX(-Math.PI / 2),
+  const m = new THREE.Mesh(ringGeo,
     new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   m.position.set(p.x, y, p.z); m.scale.setScalar(0.01);
   scene.add(m); rings.push({ m, t: 0, time, maxR });
@@ -122,7 +123,7 @@ export function updateFx(dt) {
 
   for (let i = rings.length - 1; i >= 0; i--) {  // rings
     const o = rings[i], k = (o.t += dt) / o.time;
-    if (k >= 1) { scene.remove(o.m); o.m.geometry.dispose(); o.m.material.dispose(); rings.splice(i, 1); continue; }
+    if (k >= 1) { scene.remove(o.m); o.m.material.dispose(); rings.splice(i, 1); continue; }
     o.m.scale.setScalar(Math.max(0.01, o.maxR * ease(k)));
     o.m.material.opacity = 0.95 * (1 - k);
   }

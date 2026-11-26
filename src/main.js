@@ -4,6 +4,7 @@ import { buildWorld, animateFlag, onThemeChange } from './world.js';
 import { initPortals, updatePortals } from './portals.js';
 import { initScenery, themeScenery, updateScenery } from './scenery.js';
 import { initPost } from './post.js';
+import { initQuality, watchFrame } from './quality.js';
 import { updateShots, clearShots } from './shots.js';
 import { updateNumbers } from './numbers.js';
 import { loadModels, updateEnemies, clearEnemies } from './enemies.js';
@@ -25,7 +26,7 @@ import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
 import { clearArrows } from './combat.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 document.body.prepend(renderer.domElement);
@@ -150,10 +151,12 @@ function ghostPass() {
   scene.overrideMaterial = null; scene.background = bg; scene.fog = fog;
 }
 composer = initPost(renderer, scene, camera, ghostPass);
+initQuality(renderer, composer, scene);
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
-  const frame = Math.min(clock.getDelta(), 0.05);
+  const raw = clock.getDelta(), frame = Math.min(raw, 0.05);
+  watchFrame(raw);
   const frozen = game.leveling || game.over || game.menu || game.cleared || game.paused;
   if (game.cleared && !clearShown) { clearShown = true; showChapterClear(); }
   const dt = frozen ? 0 : frame;

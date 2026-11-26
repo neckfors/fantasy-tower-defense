@@ -32,7 +32,7 @@ export function updateBars(camera) {
       if (!show) continue;
       e.bar.style.transform = `translate(${(v.x * 0.5 + 0.5) * w}px,${(-v.y * 0.5 + 0.5) * h}px) translate(-50%,-100%)`;
     }
-    e.barFill.style.width = `${Math.max(0, e.hp / e.maxHp) * 100}%`;
+    if (e.barHp !== e.hp) { e.barHp = e.hp; e.barFill.style.width = `${Math.max(0, e.hp / e.maxHp) * 100}%`; }
   }
 }
 

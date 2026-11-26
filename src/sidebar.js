@@ -49,7 +49,12 @@ addEventListener('keydown', e => {
 
 export function resetArmoury() { ITEMS.forEach(it => (it.count = 0)); }
 
+let last = '';
 export function updateSidebar() {
+  // redraw only when something on it changed
+  const state = [game.menu, game.over, canBuy(), game.coins, ...ITEMS.map(it => `${it.count}:${it.timer ? Math.ceil(game[it.timer] || 0) : ''}`)].join();
+  if (state === last) return;
+  last = state;
   side.style.display = game.menu || game.over ? 'none' : '';
   document.getElementById('sidecoins').textContent = `🪙 ${game.coins || 0}`;
   ITEMS.forEach((it, i) => {

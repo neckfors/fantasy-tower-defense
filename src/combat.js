@@ -69,7 +69,7 @@ export function updateCombat(dt, scene) {
     if (e.burn && e.burn.t <= 0) e.burn = null;
   }
   for (let i = bolts.length - 1; i >= 0; i--) {    // lightning visuals
-    if ((bolts[i].life -= dt) <= 0) { scene.remove(bolts[i].line); bolts.splice(i, 1); }
+    if ((bolts[i].life -= dt) <= 0) { scene.remove(bolts[i].line); bolts[i].line.geometry.dispose(); bolts.splice(i, 1); }
   }
 
   for (let i = arrows.length - 1; i >= 0; i--) {
@@ -102,8 +102,12 @@ export function updateCombat(dt, scene) {
       bounce(scene, t);
     } else if (dist > 0.001) {
       to.divideScalar(dist);
-      // fly along a curve: start in the launch direction, then home in
-      a.dir.lerp(to, Math.min(1, dt * (3 + a.age * 20))).normalize();
+      // straight out of the wand first, then a sharp turn that tightens until it hits
+      if (a.age >= a.launch) {
+        if (a.launch && !a.turned) { a.turned = true; burst(a.mesh.position, col, 6, 3, 0.25, 0, 0); }
+        const turn = a.launch ? 12 + (a.age - a.launch) * 60 : 3 + a.age * 20;
+        a.dir.lerp(to, Math.min(1, dt * turn)).normalize();
+      }
       a.mesh.position.addScaledVector(a.dir, step);
       a.mesh.lookAt(a.mesh.position.clone().add(a.dir));
     }
@@ -234,24 +238,21 @@ function teslaStep(dt, scene) {
 const orbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x9fd0ff).multiplyScalar(2) });
 const orbGeo = new THREE.SphereGeometry(0.22, 10, 8);
 const sniperMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const NOVA = new THREE.Vector3(0, 18.2, 0);
+const LAUNCH = 0.1;                        // seconds a bolt flies straight out of the wand before turning
 
-// The sorcerer's volley. One enemy: he aims and shoots from the staff. Several: he raises the staff,
-// gathers an orb above his head and the bolts fan out from it, each curving to its own enemy.
+// The sorcerer's volley: he faces the first target and everything shoots out of the wand.
+// Bolts meant for others then turn sharply towards their own enemy.
 function volley(scene, shots) {
-  const multi = new Set(shots).size > 1;
-  const staff = sorcererCast(shots.map(e => e.obj.position), multi);
-  if (multi) {
-    burst(NOVA, 0x9fd0ff, 22, 6, 0.4, 0, 0);
-    ring(new THREE.Vector3(0, 0, 0), 0x8fb8ff, 2.6, 0.3, NOVA.y);
-  }
+  const staff = sorcererCast(shots[0].obj.position) || ORIGIN;
+  const forward = aim(shots[0]).sub(staff).normalize();
+  const flat = new THREE.Vector3(forward.x, 0, forward.z).normalize();
   shots.forEach((target, i) => {
-    const q = target.obj.position;
-    const out = new THREE.Vector3(q.x, 0, q.z).normalize();
-    // launch direction: outwards (and up for a nova); extra bolts fan out sideways so each one is visible
-    const side = shots.length > 1 ? (i - (shots.length - 1) / 2) * (multi ? 0.12 : 0.45) : 0;
-    const dir = new THREE.Vector3(out.x - out.z * side, multi ? 0.7 : 0.1, out.z + out.x * side).normalize();
-    fireArrow(scene, target, { origin: multi ? NOVA : staff || ORIGIN, dir: shots.length > 1 ? dir : null, magic: true });
+    let dir = null;                                 // the first bolt is aimed straight at its target
+    if (i) {
+      const side = (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 0.09;   // a narrow fan so each bolt can be seen
+      dir = new THREE.Vector3(flat.x - flat.z * side, -0.08, flat.z + flat.x * side).normalize();
+    }
+    fireArrow(scene, target, { origin: staff, dir, magic: true, launch: dir ? LAUNCH : 0 });
   });
 }
 
@@ -271,7 +272,8 @@ export function fireArrow(scene, target, o = {}) {
   const mult = (o.mult || 1) * (snipe ? 3 : 1), expect = dmgNow() * mult;
   target.incoming = (target.incoming || 0) + expect;
   const dir = o.dir ? o.dir.clone() : aim(target).sub(origin).normalize();
-  arrows.push({ mesh, target, mult, expect, snipe, magic: o.magic, dir, age: 0 });
+  mesh.lookAt(origin.clone().add(dir));
+  arrows.push({ mesh, target, mult, expect, snipe, magic: o.magic, dir, launch: o.launch || 0, age: 0 });
   sfx(game.fire ? 'fireshoot' : 'shoot');
 }
 

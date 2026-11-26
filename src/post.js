@@ -16,7 +16,7 @@ class OverlayPass extends Pass {
 
 export function initPost(renderer, scene, camera, overlay) {
   const size = renderer.getDrawingBufferSize(new THREE.Vector2());
-  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 4 }));
+  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 2 }));
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(new OverlayPass(overlay));
   composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.45, 0.85));

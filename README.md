@@ -8,9 +8,11 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **Game speed:** the ▶ button (or F) cycles 1×, 2×, 3× and 5×.
 
-**Looks and combat:** six stone portals (more open in later waves, the boss gets a red one), glow effects, night sky, dirt roads, grass, braziers, fireflies and floating damage numbers. Your emerald count is shown at the top while playing. With one target the sorcerer aims from the staff; with several, the bolts gather above the staff and fan out. Attackers don't waste shots on enemies that are already about to die, Shadow Knights pick fights they can reach in time, and enemy wizards and dragons hit the tower with visible projectiles. Poison spreads to nearby enemies.
+**Looks and combat:** six stone portals (more open in later waves, the boss gets a red one), glow effects, night sky, dirt roads, grass, braziers, fireflies and floating damage numbers. Your emerald count is shown at the top while playing. The sorcerer faces his target and every bolt shoots out of the wand; with several targets they leave in a narrow fan and then turn sharply towards their own enemies. Attackers don't waste shots on enemies that are already about to die, Shadow Knights pick fights they can reach in time, and enemy wizards and dragons hit the tower with visible projectiles. Poison spreads to nearby enemies.
 
 **Balance:** damage per upgrade was measured and evened out (Baby Dragons and Spike Wall weaker, Elf Archers and Fire Arrows stronger, Shadow Knights and Fire Arrows capped at 3 levels). Big enemies and bosses have less health and level-ups come more often, so the mid-game is no longer a wall.
+
+**Performance:** if the game runs slowly it lowers resolution, glow and shadows step by step (and goes back to full quality if that does not make it any faster). Each humanoid enemy is drawn as one mesh.
 
 **Phones and tablets:** on upright phones the Armoury sits at the bottom in two columns.
 
