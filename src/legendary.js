@@ -28,6 +28,8 @@ export function updateLegendary(dt, scene) {
     }
   }
 
+  if (game.resting) return;
+
   if (game.storm) {                                  // Arcane Storm
     game.stormT -= dt;
     if (game.stormT <= 0) {

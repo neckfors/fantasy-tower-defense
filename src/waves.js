@@ -9,6 +9,7 @@ export const isBossWave = n => n % 10 === 0;
 
 export function updateWaves(dt, scene, ui) {
   if (game.cine || game.leveling || game.bossFallen) return;   // the wave can't move on or end behind these
+  game.resting = !w.running;                      // between waves: countdowns and upgrades stand still
   if (!w.running) {
     const next = game.wave + 1;
     if ((w.breakT -= dt) <= 0 && (!isBossWave(next) || bossReady(bossFor(next)))) {
@@ -16,6 +17,7 @@ export function updateWaves(dt, scene, ui) {
       w.toSpawn = 5 + game.wave * 3;
       w.spawnT = 0;
       w.running = true;
+      game.resting = false;
       w.boss = isBossWave(game.wave);
       w.squad = 0;
       openPortals(game.wave, w.boss);
@@ -40,6 +42,7 @@ export function updateWaves(dt, scene, ui) {
     w.spawnT = Math.max(0.35, 1.1 - game.wave * 0.05) * (w.squad > 0 ? 0.6 : 2.2);
   } else if (w.toSpawn === 0 && !enemies.some(isAlive)) {
     w.running = false;
+    game.resting = true;
     w.breakT = 4;
     closePortals();
     if (game.mode === 'story' && isBossWave(game.wave)) game.cleared = true;
@@ -50,5 +53,5 @@ export function updateWaves(dt, scene, ui) {
 export function cancelSpawns() { w.toSpawn = 0; w.squad = 0; w.boss = false; }
 
 // Developer mode: jump so that the next wave started is `n`
-export function jumpToWave(n) { game.wave = n - 1; Object.assign(w, { toSpawn: 0, spawnT: 0, breakT: 0.5, running: false, boss: false, squad: 0 }); closePortals(); }
+export function jumpToWave(n) { game.wave = n - 1; game.resting = true; Object.assign(w, { toSpawn: 0, spawnT: 0, breakT: 0.5, running: false, boss: false, squad: 0 }); closePortals(); }
 export { TYPES };

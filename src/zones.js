@@ -61,7 +61,7 @@ export function updateZones(dt, scene) {
       spark(Math.cos(a) * r, 0.2, Math.sin(a) * r, 0, 1.2, 0, tier(game.moat, 0xbfe6ff, 0xc8ffd8, 0xe6d0ff), 0.5);
     }
   }
-  if (game.blizzard) {
+  if (game.blizzard && !game.resting) {
     const n = dt * 60 * game.blizzard, c = Math.min(30, Math.floor(n) + (Math.random() < n % 1 ? 1 : 0));
     for (let i = 0; i < c; i++) {
       const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * game.range;

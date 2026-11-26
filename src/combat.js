@@ -17,7 +17,7 @@ const aim = e => new THREE.Vector3(e.obj.position.x, e.obj.position.y + 1.3, e.o
 
 export function updateCombat(dt, scene) {
   cooldown -= dt;
-  for (const k of ['rallyT', 'rapidT', 'frostT']) if (game[k] > 0) game[k] = Math.max(0, game[k] - dt);
+  for (const k of ['rallyT', 'rapidT', 'frostT']) if (game[k] > 0 && !game.resting) game[k] = Math.max(0, game[k] - dt);
   if (cooldown <= 0 && !game.over) {
     const shots = pickShots(game.range, game.multi, dmgNow());
     if (shots.length) {
