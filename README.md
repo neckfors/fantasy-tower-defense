@@ -6,7 +6,7 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **New:** coins and emeralds hop out of dead enemies and fly to the tower; spell effects (glowing arrow trails, jagged chain lightning, flames, meteors, frost nova, shield dome); pause with P/Esc or the button; Story mode lets you start from any chapter you have reached; bars never cover menus. Enemies hidden behind the tower or trees show as shadowy purple silhouettes; camera shake, level-up and wave rings, death poofs, fireworks on chapter clear; many new procedural sounds (spells, lightning, coins, gems, shield, pause, fanfare). Generative ambient music (mute with M).
 
-**Game speed:** the ▶ button (or F) cycles 1×, 2×, 3× and 5×.
+**Game speed:** the ▶ button (or F) cycles 1×, 2× and 3×.
 
 **Looks and combat:** six stone portals (more open in later waves, the boss gets a red one), glow effects, night sky, dirt roads, grass, braziers, fireflies and floating damage numbers. Your emerald count is shown at the top while playing. The sorcerer faces his target and every bolt shoots out of the wand; with several targets they leave in a narrow fan and then turn sharply towards their own enemies. Attackers don't waste shots on enemies that are already about to die, Shadow Knights pick fights they can reach in time, and enemy wizards and dragons hit the tower with visible projectiles. Poison spreads to nearby enemies.
 

@@ -111,7 +111,7 @@ addEventListener('keydown', e => {
   if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') setPause(!game.paused);
 });
 // ---- game speed (F / button): the battle is simulated several times per drawn frame ----
-const SPEEDS = [1, 2, 3, 5];
+const SPEEDS = [1, 2, 3];
 let speed = 1;
 const nextSpeed = () => {
   speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
