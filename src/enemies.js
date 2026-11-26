@@ -26,7 +26,7 @@ export const TYPES = {
   boss: { name: 'Giant Warlord', files: [['Knight', 0xd04a3a]], scale: [3.8, 3.8], hp: 32, speed: [1.0, 1.0], dmg: 60, xp: 250, keep: ['2H_Sword'], atk: '2H_Melee_Attack_Spin', from: 99, weight: 0 },
 };
 
-const BODY = /_(Body|Head|ArmLeft|ArmRight|LegLeft|LegRight|Cape|Helmet|Hat)$/;
+const BODY = /_(Body|Head|Head_Hooded|ArmLeft|ArmRight|LegLeft|LegRight|Cape|Helmet|Hat)$/;
 const models = {};
 export async function loadModels() {
   const loader = new GLTFLoader();
