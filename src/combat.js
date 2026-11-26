@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { game, dmgNow, rateNow } from './game.js';
 import { sfx } from './audio.js';
-import { sorcererCast } from './tower-fx.js';
+import { sorcererCast, twinCast } from './tower-fx.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
 import { burst, spark, ring } from './fx.js';
 import { rankTargets, pickShots, doomed, dist2 } from './targeting.js';
@@ -22,6 +22,7 @@ export function updateCombat(dt, scene) {
     const shots = pickShots(game.range, game.multi, dmgNow());
     if (shots.length) {
       volley(scene, shots);
+      if (game.twin) twinVolley(scene);
       cooldown = 1 / rateNow();
     }
   }
@@ -92,14 +93,14 @@ export function updateCombat(dt, scene) {
     if (dt && a.magic) spark(a.mesh.position.x, a.mesh.position.y, a.mesh.position.z, 0, 0, 0, 0xffffff, 0.15);
     if (dt && (dist < Math.max(0.9, step) || a.age > 4)) {
       burst(a.mesh.position, col, 12, 6, 0.4, 1, -8);
-      const crit = Math.random() < (game.crit || 0);
+      const crit = Math.random() < (game.crit || 0), lite = a.lite;
       const t = a.target;
       if (a.snipe) { ring(a.mesh.position, 0xffffff, 4, 0.35); burst(a.mesh.position, 0xffffff, 20, 9, 0.4, 1, 0); }
       if (crit) { ring(a.mesh.position, 0xff4040, 3, 0.3); burst(a.mesh.position, 0xff4040, 16, 8, 0.4, 1, 0); }
       remove(scene, i);
-      onHit(scene, t);
+      if (!lite) onHit(scene, t);
       damageEnemy(t, dmgNow() * a.mult * (crit ? 2.5 : 1), false, crit || a.snipe ? 'crit' : 'hit');
-      bounce(scene, t);
+      if (!lite) bounce(scene, t);
     } else if (dist > 0.001) {
       to.divideScalar(dist);
       // straight out of the wand first, then a sharp turn that tightens until it hits
@@ -136,6 +137,10 @@ export function poisonBurst(scene, dead) {
 }
 
 const r2 = () => (Math.random() - 0.5) * 2;
+// a short-lived lightning strand between two points
+export function arc(scene, a, b, mat, life = 0.3) {
+  const line = new THREE.Line(jagged(a, b), mat); scene.add(line); bolts.push({ line, life });
+}
 // jagged lightning line between two points
 function jagged(a, b) {
   const pts = [a.clone()], N = 7;
@@ -256,6 +261,14 @@ function volley(scene, shots) {
   });
 }
 
+// Twin Sorcerer: a matching volley at 40% damage. No on-hit extras, so it stays 40%.
+function twinVolley(scene) {
+  const shots = pickShots(game.range, game.multi, dmgNow() * 0.4);
+  if (!shots.length) return;
+  const staff = twinCast(shots[0].obj.position);
+  if (staff) for (const target of shots) fireArrow(scene, target, { origin: staff, magic: true, mult: 0.4, noSnipe: true, lite: true });
+}
+
 let shotN = 0;
 export function fireArrow(scene, target, o = {}) {
   const origin = o.origin || ORIGIN;
@@ -273,7 +286,7 @@ export function fireArrow(scene, target, o = {}) {
   target.incoming = (target.incoming || 0) + expect;
   const dir = o.dir ? o.dir.clone() : aim(target).sub(origin).normalize();
   mesh.lookAt(origin.clone().add(dir));
-  arrows.push({ mesh, target, mult, expect, snipe, magic: o.magic, dir, launch: o.launch || 0, age: 0 });
+  arrows.push({ mesh, target, mult, expect, snipe, magic: o.magic, lite: o.lite, dir, launch: o.launch || 0, age: 0 });
   sfx(game.fire ? 'fireshoot' : 'shoot');
 }
 

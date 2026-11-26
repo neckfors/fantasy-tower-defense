@@ -3,7 +3,8 @@ import * as THREE from 'three';
 export const SPAWN_R = 35;
 export const TOWER_R = 3.2;
 
-let groundMesh, themeSky;
+let groundMesh, themeSky, sceneRef, hemi, sun, torch, stars, sunDisc;
+let day = false, theme = { ground: 0x4f7a3a, sky: 0x1d2540 };
 const onTheme = [];
 export const onThemeChange = fn => onTheme.push(fn);
 
@@ -50,26 +51,52 @@ function buildSky(scene) {
     const v = new THREE.Vector3().randomDirection(); v.y = Math.abs(v.y) * 0.9 + 0.06;
     pts.push(v.normalize().multiplyScalar(180));
   }
-  scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(pts),
-    new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: false })));
+  stars = new THREE.Points(new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: false }));
+  scene.add(stars);
+  sunDisc = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTexture(), color: new THREE.Color(0xfff2c0).multiplyScalar(2), transparent: true, depthWrite: false, fog: false }));
+  sunDisc.position.set(-90, 38, -140); sunDisc.scale.setScalar(30); sunDisc.visible = false;
+  scene.add(sunDisc);
 }
 
 // chapter look: ground colour + sky/fog colour
 export function setTheme(scene, { ground, sky }) {
+  sceneRef = scene; theme = { ground, sky };
   groundMesh.material.color.setHex(ground);
-  scene.background.setHex(sky);
-  scene.fog.color.setHex(sky);
-  themeSky.horizon.value.setHex(sky);
-  themeSky.top.value.setHex(sky).multiplyScalar(0.22);
+  paintSky();
   onTheme.forEach(fn => fn(ground));
+}
+
+export function setDay(on) { day = on; paintSky(); }
+
+// by night the chapter's sky colour; by day a bright sky that keeps a hint of it
+function paintSky() {
+  const night = new THREE.Color(theme.sky);
+  const horizon = night.clone(), top = night.clone().multiplyScalar(0.22);
+  if (day) {
+    const hint = night.clone().multiplyScalar(1 / Math.max(night.r, night.g, night.b));
+    horizon.setHex(0xb4d4ee).lerp(hint, 0.22);
+    top.setHex(0x3f7fd0).lerp(hint, 0.12);
+  }
+  sceneRef.background.copy(horizon);
+  sceneRef.fog.color.copy(horizon);
+  sceneRef.fog.near = day ? 65 : 45; sceneRef.fog.far = day ? 160 : 110;
+  themeSky.horizon.value.copy(horizon);
+  themeSky.top.value.copy(top);
+  stars.visible = !day; sunDisc.visible = day;
+  hemi.color.setHex(day ? 0xdcecff : 0xbcd0ff); hemi.groundColor.setHex(day ? 0x7a7550 : 0x2a3a22); hemi.intensity = day ? 1.5 : 0.9;
+  sun.color.setHex(day ? 0xfff6e4 : 0xffe2b0); sun.intensity = day ? 2.9 : 2.2;
+  torch.intensity = day ? 8 : 40;
 }
 
 export function buildWorld(scene, renderer) {
   scene.background = new THREE.Color(0x1d2540);
   scene.fog = new THREE.Fog(0x1d2540, 45, 110);
 
-  scene.add(new THREE.HemisphereLight(0xbcd0ff, 0x2a3a22, 0.9));
-  const sun = new THREE.DirectionalLight(0xffe2b0, 2.2);
+  sceneRef = scene;
+  hemi = new THREE.HemisphereLight(0xbcd0ff, 0x2a3a22, 0.9);
+  scene.add(hemi);
+  sun = new THREE.DirectionalLight(0xffe2b0, 2.2);
   sun.position.set(-25, 40, 20);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -163,7 +190,7 @@ function buildTower() {
     const w = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 0.3), winM);
     w.position.set(Math.sin(a) * 3.35, y, Math.cos(a) * 3.35); w.rotation.y = a; g.add(w);
   }
-  const torch = new THREE.PointLight(0xffa24a, 40, 14); torch.position.set(0, 4, 4.5); g.add(torch);
+  torch = new THREE.PointLight(0xffa24a, 40, 14); torch.position.set(0, 4, 4.5); g.add(torch);
   return g;
 }
 

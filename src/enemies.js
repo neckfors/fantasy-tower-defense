@@ -148,14 +148,15 @@ function towerNumber(e, r, y = 4) {
 export function updateEnemies(dt, scene) {
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
-    e.mixer.update(dt);
+    const edt = game.warpT > 0 && e.state !== 'dead' ? dt * 0.12 : dt;     // Time Warp: nearly frozen in time
+    e.mixer.update(edt);
     if (e.flash > 0) e.flash -= dt;
     if (e.slowT > 0) e.slowT -= dt;
     const alive = e.state !== 'dead';          // status colour: hit, ice, poison, fire
-    setTint(e, e.flash > 0 ? 0xff5522 : !alive ? 0 : game.frostT > 0 || e.slowT > 0 ? 0x1a5a9a : e.poison ? 0x1f7a10 : e.burn ? 0x7a2a00 : 0);
+    setTint(e, e.flash > 0 ? 0xff5522 : !alive ? 0 : game.warpT > 0 ? 0x4a2a9a : game.frostT > 0 || e.slowT > 0 ? 0x1a5a9a : e.poison ? 0x1f7a10 : e.burn ? 0x7a2a00 : 0);
     const p = e.obj.position;
     if (e.emerging > 0 && alive) {             // grow out of the doorway; dragons also climb to flying height
-      e.emerging = Math.max(0, e.emerging - dt);
+      e.emerging = Math.max(0, e.emerging - edt);
       e.obj.scale.setScalar(e.size * (1 - 0.7 * (e.emerging / EMERGE) ** 2));
     }
     if (e.t.fly && alive && p.y < e.t.fly) p.y = Math.min(e.t.fly, p.y + dt * 3.5);
@@ -172,11 +173,11 @@ export function updateEnemies(dt, scene) {
         if (game.blizzard && d <= game.range) slow *= 1 - 0.15 * game.blizzard;      // Blizzard
         if (game.moat && !e.t.fly && d >= game.moatIn && d <= game.moatOut) slow *= 1 - (0.15 + 0.15 * game.moat);   // Moat: 30/45/60%
         const sp = e.speed * slow * (e.emerging > 0 ? 1.3 : 1);
-        p.x -= (p.x / d) * sp * dt;   // straight line to the tower
-        p.z -= (p.z / d) * sp * dt;
+        p.x -= (p.x / d) * sp * edt;  // straight line to the tower
+        p.z -= (p.z / d) * sp * edt;
       }
     } else if (e.state === 'hit') {
-      if ((e.atk += dt) >= (e.t.stop ? (e.t.fly ? 1.8 : 1.4) : 1)) {
+      if ((e.atk += edt) >= (e.t.stop ? (e.t.fly ? 1.8 : 1.4) : 1)) {
         e.atk = 0;
         strike(e, scene);
       }

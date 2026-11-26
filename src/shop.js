@@ -24,7 +24,7 @@ export const emeralds = () => read().emeralds || 0;
 export const lvl = id => (read().shop || {})[id] || 0;
 export const cost = it => Math.round(it.base * (1 + lvl(it.id) * 1.2));
 
-export function addCoins(n) { game.coins = (game.coins || 0) + n; }
+export function addCoins(n) { game.coins = (game.coins || 0) + Math.ceil(n * (game.coinMul || 1)); }
 
 // rare emerald drop: chance grows with enemy xp; the boss always drops several
 export function rollEmerald(e, onDrop) {

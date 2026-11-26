@@ -1,5 +1,5 @@
 import { waveFx, levelFx } from './fx.js';
-import { game } from './game.js';
+import { game, nextLegendary } from './game.js';
 import { sfx } from './audio.js';
 import { pickStars } from './upgrades-more.js';
 import { waveLabel, recordEndless, load } from './modes.js';
@@ -20,7 +20,9 @@ export function updateHud() {
   width('hpfill', `${((game.towerHp / game.maxHp) * 100).toFixed(1)}%`);
   text('hptext', `${Math.ceil(game.towerHp)} / ${game.maxHp}`);
   width('xpfill', `${((game.xp / game.xpNeed) * 100).toFixed(1)}%`);
-  text('lvl', `Level ${game.level}`);
+  const next = nextLegendary(), soon = next === game.level + 1;
+  text('lvl', !next ? `Level ${game.level}` : soon ? `Level ${game.level} · ✦ Legendary next!` : `Level ${game.level} · ✦ Legendary at ${next}`);
+  if (shown.soon !== soon) $('xp').classList.toggle('soon', (shown.soon = soon));
 }
 
 export function banner(text) {
@@ -32,9 +34,14 @@ export function banner(text) {
 
 export function showLevelUp(choices, onPick, again) {
   levelOpen = true;
-  sfx('levelup'); levelFx();
-  $('lvltitle').textContent = `Level ${game.level}!`;
-  let left = game.rerolls || 0;
+  const legend = !!choices[0]?.legendary;
+  sfx(legend ? 'fanfare' : 'levelup'); levelFx();
+  $('levelup').classList.toggle('legend', legend);
+  $('lvltitle').textContent = legend ? '✦ LEGENDARY CHOICE ✦' : `Level ${game.level}!`;
+  const next = nextLegendary();
+  $('lvlsub').textContent = legend ? `Level ${game.level} — choose one. Each can be taken only once.`
+    : 'Choose an upgrade for your tower' + (!next ? '' : next === game.level + 1 ? ' · ✦ Your next level is legendary!' : ` · ✦ Next legendary at level ${next}`);
+  let left = legend ? 0 : game.rerolls || 0;
   const box = $('cards');
   const render = list => {
     box.innerHTML = '';
@@ -47,6 +54,10 @@ export function showLevelUp(choices, onPick, again) {
         ? `${pickStars(own, u.max)}<small class="lv">${own ? `You have level ${own} → get level ${own + 1}` : "You don't have this yet"}</small>`
         : `<small class="lv">${own ? `You have ×${own} → get ×${own + 1}` : "You don't have this yet"}</small>`;
       c.innerHTML = `${badge}<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${level}`;
+      if (u.legendary) {
+        c.className = 'card legcard';
+        c.innerHTML = `<div class="legin"><em class="legtag">Legendary</em><div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span></div>`;
+      }
       c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
       box.appendChild(c);
     });

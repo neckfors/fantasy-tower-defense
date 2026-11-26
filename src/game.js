@@ -11,6 +11,7 @@ export function damageTower(n) {
   if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
   if (game.shield > 0) { const a = Math.min(game.shield, n); game.shield -= a; n -= a; game.shieldFlash = 0.15; if (n <= 0) return; }   // Barricade
   if (game.wind && game.towerHp - n <= 0) { game.wind = false; game.towerHp = game.maxHp * 0.25; return; }   // Second Wind
+  if (game.phoenix && game.towerHp - n <= 0) { game.phoenix = false; game.towerHp = game.maxHp * 0.5; game.phoenixBurst = true; return; }   // Phoenix Heart
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
 }
@@ -49,8 +50,29 @@ export const UPGRADES = [...MORE,
   { icon: '❤', name: 'Mending Stones', desc: 'Heal 40% of max HP', apply: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.4)) },
 ];
 
+// Legendary upgrades: each can be taken once, offered only at levels 5, 10, 20, 30, 40...
+export const LEGENDARY = [
+  { icon: '🌩', name: 'Arcane Storm', desc: 'Every 15 s, lightning strikes every enemy in range', apply: g => { g.storm = true; g.stormT = 3; } },
+  { icon: '🔥', name: 'Phoenix Heart', desc: 'Once, a fallen tower rises with half its health and burns nearby enemies', apply: g => (g.phoenix = true) },
+  { icon: '🧙', name: 'Twin Sorcerer', desc: 'A second wizard joins you on the tower, dealing 40% of your damage', apply: g => (g.twin = true) },
+  { icon: '⏳', name: 'Time Warp', desc: 'Every 30 s, enemies nearly stop for 4 s', apply: g => { g.warp = true; g.warpCd = 3; g.warpT = 0; } },
+  { icon: '👑', name: 'Golden Age', desc: '+50% coins and +25% XP', apply: g => { g.coinMul = 1.5; g.xpMul = (g.xpMul || 1) * 1.25; } },
+  { icon: '🏯', name: 'Titan Walls', desc: '+50% max health, and the tower slowly repairs itself', apply: g => { const add = Math.round(g.maxHp * 0.5); g.maxHp += add; g.towerHp += add; g.titan = true; } },
+].map(u => ({ ...u, legendary: true }));
+
+export const isLegendaryLevel = n => n === 5 || (n >= 10 && n % 10 === 0);
+const legendLeft = () => LEGENDARY.filter(u => !game.picks[u.name]);
+export const isLegendaryChoice = () => isLegendaryLevel(game.level) && legendLeft().length > 0;
+// the next level that will offer a legendary, or 0 when all are taken
+export function nextLegendary() {
+  if (!legendLeft().length) return 0;
+  let n = game.level + 1;
+  while (!isLegendaryLevel(n)) n++;
+  return n;
+}
+
 export function pickUpgrades(n = 3) {
-  const pool = UPGRADES.filter(u => !u.max || (game.picks[u.name] || 0) < u.max);
+  const pool = isLegendaryChoice() ? legendLeft() : UPGRADES.filter(u => !u.max || (game.picks[u.name] || 0) < u.max);
   const out = [];
   while (out.length < n && pool.length) out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
   return out;

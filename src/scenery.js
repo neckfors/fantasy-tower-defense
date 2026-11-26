@@ -5,7 +5,8 @@ import { spark } from './fx.js';
 
 // Decoration around the arena: dirt roads from the doors, grass tufts, braziers and fireflies.
 const braziers = [];
-let grass;
+let grass, day = false;
+export const setSceneryDay = on => (day = on);
 
 export function initScenery(scene) {
   // roads from every door to the courtyard, soft at the edges
@@ -75,10 +76,10 @@ function roadAlpha() {
 
 export function updateScenery(dt, t) {
   for (const b of braziers) {
-    b.glow.opacity = 0.24 + Math.sin(t * 9 + b.phase) * 0.04 + Math.sin(t * 23 + b.phase) * 0.03;
+    b.glow.opacity = (0.24 + Math.sin(t * 9 + b.phase) * 0.04 + Math.sin(t * 23 + b.phase) * 0.03) * (day ? 0.2 : 1);
     if (Math.random() < dt * 22) spark(b.p.x + (Math.random() - 0.5) * 0.5, 1.95, b.p.z + (Math.random() - 0.5) * 0.5, 0, 1.2 + Math.random(), 0, Math.random() < 0.6 ? 0xff7a1a : 0xffc850, 0.6);
   }
-  if (Math.random() < dt * 5) {                     // fireflies
+  if (!day && Math.random() < dt * 5) {             // fireflies, at night only
     const a = Math.random() * 6.28, r = 12 + Math.random() * 30;
     spark(Math.cos(a) * r, 0.6 + Math.random() * 3, Math.sin(a) * r, Math.random() - 0.5, (Math.random() - 0.3) * 0.5, Math.random() - 0.5, 0xd8ff8a, 2.8);
   }

@@ -6,7 +6,13 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **New:** coins and emeralds hop out of dead enemies and fly to the tower; spell effects (glowing arrow trails, jagged chain lightning, flames, meteors, frost nova, shield dome); pause with P/Esc or the button; Story mode lets you start from any chapter you have reached; bars never cover menus. Enemies hidden behind the tower or trees show as shadowy purple silhouettes; camera shake, level-up and wave rings, death poofs, fireworks on chapter clear; many new procedural sounds (spells, lightning, coins, gems, shield, pause, fanfare). Generative ambient music (mute with M).
 
-**Game speed:** the ▶ button (or F) cycles 1×, 2× and 3×.
+**Game speed:** the ▶ button (or F) switches between 1× and 2×.
+
+**Legendary upgrades:** at levels 5 and 10, then every 10 levels (20, 30, 40…), you choose 1 of 3 legendary cards on a special golden screen. Each can be taken only once: Arcane Storm (every 15 s lightning strikes every enemy in range), Phoenix Heart (once, a fallen tower rises with half its health and burns nearby enemies), Twin Sorcerer (a second wizard dealing 40% of your damage), Time Warp (every 30 s enemies nearly stop for 4 s), Golden Age (+50% coins, +25% XP) and Titan Walls (+50% max health and slow self-repair). The level bar, the power panel and the level-up screen tell you when the next one is coming.
+
+**Your power:** a panel on the left shows your damage, fire rate and range bonuses, bolts per cast, your legendaries and your upgrades. On small screens it starts closed; tap its title to open it. Both it and the Armoury have a Less / More button that hides the explanations to take up less space (remembered).
+
+**Day and night, fullscreen:** the ☀ / 🌙 button switches between day and night (looks only, remembered). The ⛶ button turns fullscreen on and off (Esc also leaves it); it is hidden in browsers that don't support it, such as on iPhone.
 
 **Looks and combat:** six stone portals (more open in later waves, the boss gets a red one), glow effects, night sky, dirt roads, grass, braziers, fireflies and floating damage numbers. Your emerald count is shown at the top while playing. The sorcerer faces his target and every bolt shoots out of the wand; with several targets they leave in a narrow fan and then turn sharply towards their own enemies. Attackers don't waste shots on enemies that are already about to die, Shadow Knights pick fights they can reach in time, and enemy wizards and dragons hit the tower with visible projectiles. Poison spreads to nearby enemies.
 
@@ -14,7 +20,7 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **Performance:** if the game runs slowly it lowers resolution, glow and shadows step by step (and goes back to full quality if that does not make it any faster). Each humanoid enemy is drawn as one mesh.
 
-**Phones and tablets:** on upright phones the Armoury sits at the bottom in two columns.
+**Phones and tablets:** on upright phones the Armoury sits at the bottom in two columns (three in the compact view).
 
 **Made by me and my son Sam.**
 

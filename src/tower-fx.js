@@ -11,36 +11,48 @@ const STONE = mat(0x6b6f80, { roughness: 0.95 });
 const WOOD = mat(0x5a3d26);
 const RUNE = new THREE.MeshBasicMaterial({ color: 0xffd77a });
 
-let fx, orbit, crown, beacon, beaconLight, heal = [], mixer, idle, cast, sorc, yaw = 0, sig = '';
+let fx, orbit, crown, beacon, beaconLight, heal = [], sorc, twin, sig = '';
 
-export function initTower(scene, tower) {
-  fx = new THREE.Group(); tower.add(fx);
+// one wizard on the platform; the twin wears teal so they can be told apart
+function makeWizard(tower, tint) {
   const m = getModel('Mage');
-  sorc = clone(m.scene);
-  sorc.traverse(n => {
+  const obj = clone(m.scene);
+  obj.traverse(n => {
     if (!n.isMesh) return;
     if (!BODY.test(n.name) && n.name !== '2H_Staff') { n.visible = false; return; }
     n.castShadow = true;
+    if (tint) { n.material = n.material.clone(); n.material.color.setHex(tint); }
   });
-  sorc.scale.setScalar(1.5);
-  sorc.position.y = 13.6;
-  tower.add(sorc);
-  mixer = new THREE.AnimationMixer(sorc);
+  obj.scale.setScalar(1.5);
+  obj.position.y = 13.6;
+  tower.add(obj);
+  const mixer = new THREE.AnimationMixer(obj);
   const clip = n => THREE.AnimationClip.findByName(m.animations, n);
-  idle = mixer.clipAction(clip('Idle')); idle.play();
-  cast = mixer.clipAction(clip('Spellcast_Shoot')); cast.setLoop(THREE.LoopOnce); cast.timeScale = 2;
+  const idle = mixer.clipAction(clip('Idle')); idle.play();
+  const cast = mixer.clipAction(clip('Spellcast_Shoot')); cast.setLoop(THREE.LoopOnce); cast.timeScale = 2;
   mixer.addEventListener('finished', () => idle.setEffectiveWeight(1));
+  return { obj, mixer, idle, cast, yaw: 0 };
+}
+
+export function initTower(scene, tower) {
+  fx = new THREE.Group(); tower.add(fx);
+  sorc = makeWizard(tower);
+  twin = makeWizard(tower, 0x6affe0);
+  twin.obj.visible = false;
 }
 
 // Snap to face the target and cast. Returns the wand tip (where the bolts leave from).
-export function sorcererCast(p) {
-  if (!sorc) return null;
-  yaw = Math.atan2(p.x, p.z);
-  sorc.rotation.y = yaw;
-  idle.setEffectiveWeight(0);
-  cast.reset().play();
-  return new THREE.Vector3(Math.sin(yaw) * 1.5, 15.7, Math.cos(yaw) * 1.5);
+function castAt(w, p) {
+  if (!w) return null;
+  const at = w.obj.position;
+  w.yaw = Math.atan2(p.x - at.x, p.z - at.z);
+  w.obj.rotation.y = w.yaw;
+  w.idle.setEffectiveWeight(0);
+  w.cast.reset().play();
+  return new THREE.Vector3(at.x + Math.sin(w.yaw) * 1.5, 15.7, at.z + Math.cos(w.yaw) * 1.5);
 }
+export const sorcererCast = p => castAt(sorc, p);
+export const twinCast = p => castAt(twin, p);
 
 function ring(count, fn) { for (let i = 0; i < count; i++) fx.add(fn(i, (i / count) * Math.PI * 2)); }
 
@@ -117,9 +129,14 @@ function rebuild() {
 
 export function updateTower(dt, t) {
   if (!fx) return;
-  mixer.update(dt);
-  const turn = Math.atan2(Math.sin(yaw - sorc.rotation.y), Math.cos(yaw - sorc.rotation.y));
-  sorc.rotation.y += turn * Math.min(1, dt * 12);
+  twin.obj.visible = !!game.twin;                   // with a twin, the two stand side by side
+  sorc.obj.position.x = game.twin ? -1.45 : 0;
+  twin.obj.position.x = 1.45;
+  for (const w of [sorc, twin]) {
+    w.mixer.update(dt);
+    const turn = Math.atan2(Math.sin(w.yaw - w.obj.rotation.y), Math.cos(w.yaw - w.obj.rotation.y));
+    w.obj.rotation.y += turn * Math.min(1, dt * 12);
+  }
   const s = [game.level, game.multi, ...Object.entries(game.picks)].join();
   if (s !== sig) { sig = s; rebuild(); }
   if (orbit) orbit.rotation.y += dt * 0.5;

@@ -2,6 +2,7 @@ import { game, dmgNow } from './game.js';
 import { sfx } from './audio.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
 import { castFx, meteor, shake } from './fx.js';
+import { compactToggle } from './compact.js';
 
 // In-run Armoury: spend coins (run-only) on consumables and timed buffs. These are different
 // from the level-up upgrades, which are permanent for the run.
@@ -20,6 +21,7 @@ const cost = it => Math.round(it.base * (1 + 0.25 * it.count));
 const side = document.createElement('div');
 side.id = 'side';
 side.innerHTML = '<h3>Armoury <span id="sidecoins"></span></h3>';
+compactToggle(side, side.firstChild, 'ftd-small-armoury');
 const btns = ITEMS.map((it, i) => {
   const b = document.createElement('button');
   b.innerHTML = `<span><small>${i + 1}</small>${it.icon} ${it.name}<i>${it.short}</i></span><b></b>`;

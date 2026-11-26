@@ -24,6 +24,10 @@ import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
 import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
 import { clearArrows } from './combat.js';
+import { initDisplay, isFullscreen } from './display.js';
+import { updateLegendary } from './legendary.js';
+import { updatePanel } from './panel.js';
+import { isLegendaryChoice } from './game.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
@@ -108,10 +112,10 @@ $('resume').onclick = () => setPause(false);
 $('quit').onclick = () => location.reload();
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') setPause(!game.paused);
+  if (e.key === 'p' || e.key === 'P' || (e.key === 'Escape' && !isFullscreen())) setPause(!game.paused);   // in fullscreen, Esc only leaves it
 });
 // ---- game speed (F / button): the battle is simulated several times per drawn frame ----
-const SPEEDS = [1, 2, 3];
+const SPEEDS = [1, 2];
 let speed = 1;
 const nextSpeed = () => {
   speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
@@ -152,6 +156,7 @@ function ghostPass() {
 }
 composer = initPost(renderer, scene, camera, ghostPass);
 initQuality(renderer, composer, scene);
+initDisplay(renderer, composer);
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
@@ -162,8 +167,9 @@ renderer.setAnimationLoop(() => {
   const dt = frozen ? 0 : frame;
 
   if (game.leveling && !ui.isLevelOpen()) {
-    const nPick = 3 + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
-    game.wiseWave = game.wave;
+    const legend = isLegendaryChoice();       // legendary levels offer 3, and don't use up Wise Tower
+    const nPick = legend ? 3 : 3 + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
+    if (!legend) game.wiseWave = game.wave;
     ui.showLevelUp(pickUpgrades(nPick), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = false; checkLevel(); }, () => pickUpgrades(nPick));
   }
   if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
@@ -177,6 +183,7 @@ renderer.setAnimationLoop(() => {
     updateWaves(step, scene, ui);
     updateEnemies(step, scene);
     updateCombat(step, scene);
+    updateLegendary(step, scene);
     updateKnights(step, scene);
     updateHelpers(step, scene);
     updateZones(step, scene);
@@ -185,7 +192,10 @@ renderer.setAnimationLoop(() => {
   }
   updatePortals(frame);
   updateScenery(frame, clock.elapsedTime);
-  $('pausebtn').style.display = $('speedbtn').style.display = game.menu || game.over ? 'none' : '';
+  const bar = game.menu || game.over ? 'none' : '';
+  $('pausebtn').style.display = $('speedbtn').style.display = $('daybtn').style.display = bar;
+  if ($('fsbtn')) $('fsbtn').style.display = bar;
+  updatePanel();
   updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
