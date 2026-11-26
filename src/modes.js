@@ -13,7 +13,9 @@ const KEY = 'ftd-save';
 export const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
 const save = s => { try { localStorage.setItem(KEY, JSON.stringify({ ...load(), ...s })); } catch {} };
 
-export function startMode(scene, mode, chapter = 1) {
+export function startMode(scene, mode, chapter = 1, carryOn = false) {
+  // a later chapter picked from the menu starts with a new tower, so its ramp starts there too
+  game.rampFrom = mode === 'story' && !carryOn ? Math.max(10, (chapter - 1) * 10) : 10;
   game.mode = mode; game.chapter = chapter;
   const th = CHAPTERS[mode === 'story' ? chapter - 1 : 0];
   setTheme(scene, th);

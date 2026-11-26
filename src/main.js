@@ -85,7 +85,7 @@ $('mute').textContent = isMuted() ? '🔇' : '🔊';
 const begin = (mode, ch, carryOn) => {
   sfx('click'); $('menu').hidden = true; $('chapter').hidden = true;
   clearEnemies(scene); clearArrows(scene); clearShots(); game.cleared = false;
-  startMode(scene, mode, ch);
+  startMode(scene, mode, ch, carryOn);
   if (carryOn) nextChapter(); else applyShop();
   game.menu = false;
 };

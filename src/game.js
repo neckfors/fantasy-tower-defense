@@ -7,6 +7,9 @@ export const game = {
   leveling: false, over: false, picks: {},
 };
 
+// how far the late-game ramp has come: enemies get tougher for every wave after 10 (see modes.js for chapter starts)
+export const wavesPast = () => Math.max(0, game.wave - (game.rampFrom ?? 10));
+
 export function damageTower(n) {
   if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
   if (game.shield > 0) { const a = Math.min(game.shield, n); game.shield -= a; n -= a; game.shieldFlash = 0.15; if (n <= 0) return; }   // Barricade

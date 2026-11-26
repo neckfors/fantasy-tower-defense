@@ -7,7 +7,7 @@ import { mergedModel } from './merge.js';
 import { popNumber } from './numbers.js';
 import { lob } from './shots.js';
 import { poisonBurst } from './combat.js';
-import { damageTower, addXp, game, dmgNow } from './game.js';
+import { damageTower, addXp, game, dmgNow, wavesPast } from './game.js';
 import { sfx } from './audio.js';
 import { addCoins, rollEmerald, emeralds } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
@@ -85,7 +85,8 @@ export function spawnEnemy(scene, typeKey, baseHp, portal = randomPortal()) {
   walk.play();
 
   const hp = baseHp * t.hp;
-  const e = { type: typeKey, t, obj, mixer, walk, mats, clip, hp, maxHp: hp, state: 'walk', timer: 0, atk: 0, flash: 0, tint: 0, size, emerging: EMERGE, speed: rnd(t.speed), xp: t.xp };
+  const dmg = Math.round(t.dmg * (1 + (typeKey === 'boss' ? 0.015 : 0.03) * wavesPast()));
+  const e = { type: typeKey, t, obj, mixer, walk, mats, clip, hp, maxHp: hp, dmg, state: 'walk', timer: 0, atk: 0, flash: 0, tint: 0, size, emerging: EMERGE, speed: rnd(t.speed), xp: t.xp };
   scene.add(obj);
   enemies.push(e);
   return e;
@@ -130,7 +131,7 @@ export function clearEnemies(scene) {
 function strike(e, scene) {
   const hit = () => {
     const sh = game.shield > 0;
-    damageTower(e.t.dmg);
+    damageTower(e.dmg);
     sfx(sh ? 'shieldhit' : 'hurt');
     if (!sh) hurtFx();
     if (game.thorns) damageEnemy(e, dmgNow() * 0.8 * game.thorns, false, 'spike');
@@ -147,7 +148,7 @@ function strike(e, scene) {
 }
 function towerNumber(e, r, y = 4) {
   const p = e.obj.position, d = Math.hypot(p.x, p.z) || 1;
-  popNumber(head.set((p.x / d) * r, y, (p.z / d) * r), e.t.dmg, 'tower');
+  popNumber(head.set((p.x / d) * r, y, (p.z / d) * r), e.dmg, 'tower');
 }
 
 export function updateEnemies(dt, scene) {

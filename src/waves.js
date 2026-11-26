@@ -1,4 +1,4 @@
-import { game } from './game.js';
+import { game, wavesPast } from './game.js';
 import { enemies, isAlive, spawnEnemy, pickType, TYPES } from './enemies.js';
 import { openPortals, closePortals, randomPortal, bossPortal } from './portals.js';
 import { startCutscene } from './cutscene.js';
@@ -26,11 +26,11 @@ export function updateWaves(dt, scene, ui) {
     }
     return;
   }
-  const hp = 24 + game.wave * 4;
+  const hp = (24 + game.wave * 4) * (1 + 0.05 * wavesPast());   // normal enemy base health
   if (w.boss) {                                   // boss arrives first, with the usual crowd
     w.boss = false;
     const door = bossPortal();
-    startCutscene(spawnEnemy(scene, 'boss', hp * (game.wave / 10), door), door);
+    startCutscene(spawnEnemy(scene, 'boss', hp * (0.875 + game.wave / 80), door), door);
     w.spawnT = 1.2;
     return;
   }
