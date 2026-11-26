@@ -1,4 +1,5 @@
 import { game, UPGRADES, LEGENDARY, nextLegendary } from './game.js';
+import { crowns } from './dynasty.js';
 import { stars } from './upgrades-more.js';
 import { compactToggle } from './compact.js';
 import { STORM_EVERY, WARP_EVERY, WARP_TIME } from './legendary.js';
@@ -21,7 +22,7 @@ function status(name) {
   const timer = (left, every) => left <= 0.5 ? ['Ready', 'ready', 1] : [`⏳ ${Math.ceil(left)}s`, 'wait', Math.max(0, 1 - left / every)];
   if (name === 'Arcane Storm') return timer(game.stormT, STORM_EVERY);
   if (name === 'Time Warp') return game.warpT > 0 ? [`Active ${Math.ceil(game.warpT)}s`, 'active', game.warpT / WARP_TIME] : timer(game.warpCd, WARP_EVERY);
-  if (name === 'Phoenix Heart') return game.phoenix ? ['Ready', 'ready', 1] : [`Used ↻ lv ${Math.floor(game.level / 10) * 10 + 10}`, 'used', 0];
+  if (name === 'Phoenix Heart') return game.phoenix ? ['Ready', 'ready', 1] : [`Used ↻ lv ${nextLegendary()}`, 'used', 0];
   return ['On', 'on', 0];
 }
 function updateLegs(list) {
@@ -48,5 +49,6 @@ export function updatePanel() {
   const next = nextLegendary();
   body.innerHTML = `<div class="pstats">${stat('🗡', 'Damage', pct(game.dmg, BASE.dmg))}${stat('⚡', 'Fire rate', pct(game.rate, BASE.rate))}${stat('🔭', 'Range', pct(game.range, BASE.range))}${stat('🎯', 'Bolts per cast', game.multi)}</div>`
     + (next ? `<div class="pnext${next === game.level + 1 ? ' soon' : ''}">✦ Next legendary: level ${next}</div>` : '')
+    + (crowns() ? `<div class="pu" title="Crowns from earlier dynasties"><span>👑</span><span class="n">Crowns</span><span class="x">×${crowns()}</span></div>` : '')
     + ups.join('');
 }

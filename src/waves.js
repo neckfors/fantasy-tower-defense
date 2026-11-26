@@ -1,6 +1,7 @@
 import { game, wavesPast } from './game.js';
 import { enemies, isAlive, spawnEnemy, pickType, TYPES } from './enemies.js';
 import { openPortals, closePortals, randomPortal, bossPortal } from './portals.js';
+import { recordDynastyWave } from './dynasty.js';
 import { startCutscene } from './cutscene.js';
 import { bossFor, bossReady, loadBoss } from './bosses.js';
 
@@ -14,6 +15,7 @@ export function updateWaves(dt, scene, ui) {
     const next = game.wave + 1;
     if ((w.breakT -= dt) <= 0 && (!isBossWave(next) || bossReady(bossFor(next)))) {
       game.wave++;
+      recordDynastyWave();
       w.toSpawn = 5 + game.wave * 3;
       w.spawnT = 0;
       w.running = true;

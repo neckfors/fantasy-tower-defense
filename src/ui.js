@@ -37,11 +37,12 @@ export function showLevelUp(choices, onPick, again) {
   const legend = !!choices[0]?.legendary;
   sfx(legend ? 'fanfare' : 'levelup'); levelFx();
   $('levelup').classList.toggle('legend', legend);
-  $('lvltitle').textContent = legend ? '✦ LEGENDARY CHOICE ✦' : `Level ${game.level}!`;
+  $('lvltitle').textContent = legend ? '✦ LEGENDARY CHOICE ✦' : game.freePick ? '👑 Free upgrade' : `Level ${game.level}!`;
   const next = nextLegendary();
   $('lvlsub').textContent = legend ? `Level ${game.level} — choose one. Each can be taken only once.`
     : 'Choose an upgrade for your tower' + (!next ? '' : next === game.level + 1 ? ' · ✦ Your next level is legendary!' : ` · ✦ Next legendary at level ${next}`);
-  let left = legend ? 0 : game.rerolls || 0;
+  // rerolls from upgrades come back every level-up and are used first; the Crown one is once per run
+  let left = legend ? 0 : (game.rerolls || 0) + (game.runReroll || 0);
   const box = $('cards');
   const render = list => {
     box.innerHTML = '';
@@ -65,7 +66,7 @@ export function showLevelUp(choices, onPick, again) {
       const r = document.createElement('button');
       r.className = 'card'; r.style.width = '120px'; r.style.justifyContent = 'center';
       r.innerHTML = `<div class="ic">🔄</div><b>Reroll</b><span>${left} left</span>`;
-      r.onclick = () => { left--; sfx('levelup'); render(again()); };
+      r.onclick = () => { if (left <= (game.runReroll || 0)) game.runReroll--; left--; sfx('levelup'); render(again()); };
       box.appendChild(r);
     }
   };

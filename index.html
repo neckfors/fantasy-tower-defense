@@ -20,10 +20,11 @@
 <button id="mute" class="pill" title="Mute (M)" style="position:fixed;left:20px;bottom:16px;cursor:pointer;color:inherit">🔊</button>
 <div id="levelup" class="overlay" hidden><div class="rays"></div><h2 id="lvltitle"></h2><p id="lvlsub"></p><div id="cards"></div></div>
 <div id="gameover" class="overlay" hidden><h2>The tower has fallen</h2><p id="goinfo"></p><button class="card" id="restart"><b>Try again</b></button></div>
-<div id="menu" class="overlay"><h2>Fantasy Tower Defense</h2><div id="cards">
+<div id="menu" class="overlay"><h2>Fantasy Tower Defense</h2><p id="m-crowns"></p><div id="cards">
   <button class="card" id="m-story"><div class="ic">⚔</div><b>Story</b><span>5 chapters, a boss ends each</span><span id="m-prog"></span></button>
   <button class="card" id="m-endless"><div class="ic">∞</div><b>Endless</b><span>Survive as long as you can</span><span id="m-best"></span></button>
   <button class="card" id="m-shop"><div class="ic">💎</div><b>Shop</b><span>Permanent bonuses</span><span id="m-gold"></span></button>
+  <button class="card" id="m-dyn"><div class="ic">👑</div><b>New Dynasty</b><span id="m-dyn-what"></span><span id="m-dyn-state"></span></button>
 </div>
 <p class="made">Made by me and my son Sam</p>
 <p class="made" style="font-size:12px;opacity:.8">3D models: <a href="https://kaylousberg.itch.io/kaykit-adventurers" target="_blank" rel="noopener" style="color:inherit">KayKit</a> by Kay Lousberg · <a href="https://poly.pizza/m/VBvzjFIYws" target="_blank" rel="noopener" style="color:inherit">Dragon</a> by Quaternius · CC0</p>
@@ -37,6 +38,8 @@
 <button id="daybtn" class="pill">☀</button>
 <button id="fsbtn" class="pill" title="Fullscreen">⛶</button>
 <div id="shop" class="overlay" hidden><h2>Shop</h2><p class="shopgold"></p><div class="shoplist"></div><button class="card" id="shopback"><b>Back</b></button></div>
+<div id="dynasty" class="overlay" hidden><h2 id="dyntitle"></h2><p id="dynsub"></p><div id="dynboxes"></div><h3>What Crowns give you</h3><ul id="dynlist"></ul>
+<div id="dynbtns"><button class="card" id="dynback"><b></b></button><button class="card" id="dynhold"><b>👑 Hold to start over</b></button></div><p id="dynnote">Hold for 2 seconds.</p></div>
 <div id="chapter" class="overlay" hidden><h2 id="chtitle"></h2><p id="chtext"></p><div id="chbtns"></div></div>
 <div id="load">Summoning peasants…</div>
 <script type="module" src="src/main.js"></script>

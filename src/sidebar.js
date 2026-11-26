@@ -16,7 +16,7 @@ const ITEMS = [
   { icon: '❄', name: 'Frost Nova', desc: 'Slow all enemies by 60% for 8s', short: 'Slows all enemies, 8s', base: 60, timer: 'frostT', use: g => (g.frostT = 8) },
   { icon: '🧱', name: 'Barricade', desc: 'Shield that absorbs 200 damage', short: 'Shield: blocks 200 damage', base: 80, use: g => (g.shield = (g.shield || 0) + 200) },
 ].map(it => ({ ...it, count: 0 }));
-const cost = it => Math.round(it.base * (1 + 0.25 * it.count));
+const cost = it => Math.round(it.base * (1 + 0.25 * it.count) * (game.armouryMul || 1));
 
 const side = document.createElement('div');
 side.id = 'side';

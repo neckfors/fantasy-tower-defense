@@ -24,6 +24,7 @@ import { updateSidebar } from './sidebar.js';
 import { sfx, toggleMute, isMuted } from './audio.js';
 import { CHAPTERS, startMode, load, chapterCleared } from './modes.js';
 import { clearArrows } from './combat.js';
+import { applyCrowns, initDynastyMenu } from './dynasty.js';
 import { initDisplay, isFullscreen } from './display.js';
 import { updateLegendary } from './legendary.js';
 import { updatePanel } from './panel.js';
@@ -86,11 +87,13 @@ const begin = (mode, ch, carryOn) => {
   sfx('click'); $('menu').hidden = true; $('chapter').hidden = true;
   clearEnemies(scene); clearArrows(scene); clearShots(); game.cleared = false;
   startMode(scene, mode, ch, carryOn);
-  if (carryOn) nextChapter(); else applyShop();
+  if (carryOn) nextChapter();
+  else { game.fromStart = mode === 'endless' || ch === 1; applyShop(); applyCrowns(); }
   game.menu = false;
 };
 const refreshGold = () => { $('m-gold').textContent = `💎 ${emeralds()}`; };
 refreshGold();
+initDynastyMenu(() => sfx('click'));
 $('m-shop').onclick = () => { sfx('click'); $('menu').hidden = true; $('shop').hidden = false; renderShop($('shop'), () => sfx('levelup')); };
 $('shopback').onclick = () => { sfx('click'); $('shop').hidden = true; $('menu').hidden = false; refreshGold(); };
 $('m-endless').onclick = () => begin('endless');
@@ -172,9 +175,9 @@ renderer.setAnimationLoop(() => {
 
   if (game.leveling && !game.cine && !ui.isLevelOpen()) {      // waits for a cutscene to end
     const legend = isLegendaryChoice();       // legendary levels offer 3, and don't use up Wise Tower
-    const nPick = legend ? 3 : 3 + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
+    const nPick = legend ? 3 : 3 + (game.extraCard || 0) + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
     if (!legend) game.wiseWave = game.wave;
-    ui.showLevelUp(pickUpgrades(nPick), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = false; checkLevel(); }, () => pickUpgrades(nPick));
+    ui.showLevelUp(pickUpgrades(nPick), up => { up.apply(game); game.picks[up.name] = (game.picks[up.name] || 0) + 1; game.leveling = game.freePick = false; checkLevel(); }, () => pickUpgrades(nPick));
   }
   if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
 

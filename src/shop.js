@@ -31,7 +31,8 @@ export function rollEmerald(e, onDrop) {
   const boss = e.type === 'boss';
   const chance = 0.03 + e.t.xp / 400 + 0.02 * lvl('gold');
   if (!boss && Math.random() > chance) return;
-  const n = boss ? 5 : 1;
+  const worth = (boss ? 5 : 1) * (game.gemMul || 1);       // Crowns add a share, paid out by chance
+  const n = Math.floor(worth) + (Math.random() < worth % 1 ? 1 : 0);
   write({ emeralds: emeralds() + n });
   game.gems = emeralds();
   game.runEmeralds = (game.runEmeralds || 0) + n;

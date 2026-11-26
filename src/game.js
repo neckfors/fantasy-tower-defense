@@ -14,6 +14,7 @@ export function damageTower(n) {
   if (game.over || game.god) return;   // (game.picks counts chosen upgrades by name)
   if (game.shield > 0) { const a = Math.min(game.shield, n); game.shield -= a; n -= a; game.shieldFlash = 0.15; if (n <= 0) return; }   // Barricade
   if (game.wind && game.towerHp - n <= 0) { game.wind = false; game.towerHp = game.maxHp * 0.25; return; }   // Second Wind
+  if (game.rise && game.towerHp - n <= 0) { game.rise = false; game.towerHp = game.maxHp * 0.25; return; }   // ninth Crown
   if (game.phoenix && game.towerHp - n <= 0) { game.phoenix = false; game.towerHp = game.maxHp * 0.5; game.phoenixBurst = true; return; }   // Phoenix Heart
   game.towerHp = Math.max(0, game.towerHp - n);
   if (game.towerHp === 0) game.over = true;
@@ -64,7 +65,7 @@ export const LEGENDARY = [
   { icon: '🏯', name: 'Titan Walls', desc: '+50% max health, and the tower slowly repairs itself', apply: g => { const add = Math.round(g.maxHp * 0.5); g.maxHp += add; g.towerHp += add; g.titan = true; } },
 ].map(u => ({ ...u, legendary: true }));
 
-export const isLegendaryLevel = n => n >= 10 && n % 10 === 0;
+export const isLegendaryLevel = n => (n >= 10 && n % 10 === 0) || (n === 5 && !!game.earlyLegend);   // tenth Crown: level 5 too
 const legendLeft = () => LEGENDARY.filter(u => !game.picks[u.name]);
 export const isLegendaryChoice = () => isLegendaryLevel(game.level) && legendLeft().length > 0;
 // the next level that will offer a legendary, or 0 when all are taken

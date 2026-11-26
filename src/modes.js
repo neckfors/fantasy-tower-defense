@@ -11,7 +11,7 @@ export const CHAPTERS = [
 ];
 const KEY = 'ftd-save';
 export const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-const save = s => { try { localStorage.setItem(KEY, JSON.stringify({ ...load(), ...s })); } catch {} };
+export const save = s => { try { localStorage.setItem(KEY, JSON.stringify({ ...load(), ...s })); } catch {} };
 
 export function startMode(scene, mode, chapter = 1, carryOn = false) {
   // a later chapter picked from the menu starts with a new tower, so its ramp starts there too
@@ -25,4 +25,4 @@ export const waveLabel = () => game.mode === 'story'
   ? `Ch.${game.chapter} · Wave ${(game.wave - 1) % 10 + 1}/10` : `Wave ${game.wave}`;
 
 export function recordEndless() { const b = load().best || 0; if (game.wave > b) save({ best: game.wave }); }
-export function chapterCleared() { save({ unlocked: Math.max(load().unlocked || 1, game.chapter + 1) }); }
+export function chapterCleared() { save({ unlocked: Math.max(load().unlocked || 1, game.chapter + 1), ...(game.chapter >= CHAPTERS.length && { storyDone: true }) }); }

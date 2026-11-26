@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { game } from './game.js';
+import { crowns } from './dynasty.js';
 import { getModel } from './enemies.js';
 
 // The sorcerer on top of the tower + decorations that grow with level and upgrades.
@@ -34,7 +35,39 @@ function makeWizard(tower, tint) {
   return { obj, mixer, idle, cast, yaw: 0 };
 }
 
+// Crowns dress the tower: banner at 1, golden trim at 3, golden top and flag at 6, a halo at 10.
+// Crowns only change when the page reloads, so this is built once.
+function dressTower(tower, n) {
+  if (!n) return;
+  const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = true; tower.add(o); return o; };
+  const cloth = mat(0x8c1f2f, { side: THREE.DoubleSide });
+  const shape = new THREE.Shape([[-0.9, 2], [0.9, 2], [0.9, -2], [0, -1.3], [-0.9, -2]].map(p => new THREE.Vector2(...p)));
+  add(new THREE.ShapeGeometry(shape), cloth, 0, 6.8, 3.75);
+  add(new THREE.BoxGeometry(2.2, 0.22, 0.22), n >= 3 ? GOLD : WOOD, 0, 8.85, 3.75);
+  const emblem = new THREE.Group();                      // a little crown on the banner
+  emblem.position.set(0, 7.1, 3.8);
+  for (const [x, y, h] of [[-0.42, 0.35, 0.6], [0, 0.45, 0.8], [0.42, 0.35, 0.6]]) {
+    const c = new THREE.Mesh(new THREE.ConeGeometry(0.2, h, 4), GOLD); c.position.set(x, y, 0); emblem.add(c);
+  }
+  emblem.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.25, 0.1), GOLD));
+  tower.add(emblem);
+  if (n >= 3) {
+    for (const x of [-0.9, 0.9]) add(new THREE.BoxGeometry(0.12, 3.9, 0.08), GOLD, x, 6.85, 3.77);
+    for (const [r, y] of [[4.5, 1.2], [4.25, 11.35]]) add(new THREE.TorusGeometry(r, 0.14, 6, 40), GOLD, 0, y, 0).rotation.x = Math.PI / 2;
+  }
+  if (n >= 6) {
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      add(new THREE.BoxGeometry(1.25, 0.28, 1.25), GOLD, Math.cos(a) * 3.8, 12.65, Math.sin(a) * 3.8).rotation.y = -a;
+    }
+    tower.userData.flag.material.color.setHex(0xffc23a);
+    add(new THREE.SphereGeometry(0.28, 10, 8), GOLD, 2.5, 17.1, 0);
+  }
+  if (n >= 10) add(new THREE.TorusGeometry(3.4, 0.16, 8, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffd24a).multiplyScalar(2) }), 0, 19.8, 0).rotation.x = Math.PI / 2;
+}
+
 export function initTower(scene, tower) {
+  dressTower(tower, crowns());
   fx = new THREE.Group(); tower.add(fx);
   sorc = makeWizard(tower);
   twin = makeWizard(tower, 0x6affe0);
