@@ -1,7 +1,7 @@
 import { waveFx, levelFx } from './fx.js';
 import { game } from './game.js';
 import { sfx } from './audio.js';
-import { stars } from './upgrades-more.js';
+import { pickStars } from './upgrades-more.js';
 import { waveLabel, recordEndless, load } from './modes.js';
 
 const $ = id => document.getElementById(id);
@@ -12,6 +12,9 @@ export function updateHud() {
   $('wave').textContent = `⚔ ${waveLabel()}`;
   $('kills').textContent = `☠ ${game.kills}`;
   $('goldhud').textContent = `🪙 ${game.coins || 0}`;
+  const gems = `💎 ${game.gems || 0}`, found = game.runEmeralds ? `+${game.runEmeralds} this run` : 'emeralds';
+  if ($('gems').textContent !== gems) $('gems').textContent = gems;
+  if ($('gemrun').textContent !== found) $('gemrun').textContent = found;
   $('hpfill').style.width = `${(game.towerHp / game.maxHp) * 100}%`;
   $('hptext').textContent = `${Math.ceil(game.towerHp)} / ${game.maxHp}`;
   $('xpfill').style.width = `${(game.xp / game.xpNeed) * 100}%`;
@@ -36,7 +39,12 @@ export function showLevelUp(choices, onPick, again) {
     list.forEach(u => {
       const c = document.createElement('button');
       c.className = 'card';
-      c.innerHTML = `<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${u.max ? stars((game.picks[u.name] || 0) + 1, u.max) : ''}`;
+      const own = game.picks[u.name] || 0, instant = u.name === 'Mending Stones';
+      const badge = instant ? '<em class="badge inst">Instant</em>' : own ? '<em class="badge up">Upgrade</em>' : '<em class="badge">New</em>';
+      const level = instant ? '' : u.max
+        ? `${pickStars(own, u.max)}<small class="lv">${own ? `You have level ${own} → get level ${own + 1}` : "You don't have this yet"}</small>`
+        : `<small class="lv">${own ? `You have ×${own} → get ×${own + 1}` : "You don't have this yet"}</small>`;
+      c.innerHTML = `${badge}<div class="ic">${u.icon}</div><b>${u.name}</b><span>${u.desc}</span>${level}`;
       c.onclick = () => { $('levelup').hidden = true; levelOpen = false; onPick(u); };
       box.appendChild(c);
     });

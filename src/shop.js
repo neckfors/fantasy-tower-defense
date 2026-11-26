@@ -1,6 +1,7 @@
 import { game } from './game.js';
 import { stars } from './upgrades-more.js';
 import { resetArmoury } from './sidebar.js';
+import { addRange } from './game.js';
 
 // Coins = this run only (spent in the Armoury sidebar). Emeralds = rare drops, saved forever,
 // spent in the menu Shop on permanent bonuses. Save key 'ftd-save': emeralds, shop.
@@ -32,6 +33,7 @@ export function rollEmerald(e, onDrop) {
   if (!boss && Math.random() > chance) return;
   const n = boss ? 5 : 1;
   write({ emeralds: emeralds() + n });
+  game.gems = emeralds();
   game.runEmeralds = (game.runEmeralds || 0) + n;
   onDrop?.(n);
 }
@@ -48,13 +50,19 @@ export function applyShop() {          // at the start of a run
   game.maxHp += 50 * L('hp'); game.towerHp = game.maxHp;
   game.dmg *= 1 + 0.05 * L('dmg');
   game.rate *= 1 + 0.05 * L('rate');
-  game.range *= 1 + 0.04 * L('range');
+  addRange(game, 1 + 0.04 * L('range'));
   game.xpMul = 1 + 0.08 * L('xp');
   if (L('volley')) game.multi = 2;
   game.wind = !!L('wind');
-  game.coins = 0; game.runEmeralds = 0;
+  game.coins = 0; game.runEmeralds = 0; game.gems = emeralds();
   game.rallyT = game.rapidT = game.frostT = game.shield = 0;
   resetArmoury();
+}
+
+// next story chapter: same run (upgrades kept), fresh tower and spells. Shop bonuses are already applied.
+export function nextChapter() {
+  game.towerHp = game.maxHp;
+  game.rallyT = game.rapidT = game.frostT = game.shield = 0;
 }
 
 export function renderShop(el, onChange) {

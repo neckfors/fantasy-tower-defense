@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { buildWorld, animateFlag } from './world.js';
+import { buildWorld, animateFlag, onThemeChange } from './world.js';
+import { initPortals, updatePortals } from './portals.js';
+import { initScenery, themeScenery, updateScenery } from './scenery.js';
+import { initPost } from './post.js';
+import { updateShots, clearShots } from './shots.js';
+import { updateNumbers } from './numbers.js';
 import { loadModels, updateEnemies, clearEnemies } from './enemies.js';
 import { updateCombat } from './combat.js';
 import { updateWaves } from './waves.js';
@@ -8,7 +13,7 @@ import { game, checkLevel, pickUpgrades } from './game.js';
 import * as ui from './ui.js';
 import { initDev } from './dev.js';
 import { initTower, updateTower } from './tower-fx.js';
-import { applyShop, emeralds, renderShop } from './shop.js';
+import { applyShop, nextChapter, emeralds, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
 import { initFx, updateFx, shakeStep, fireworks } from './fx.js';
 import { updateKnights } from './knights.js';
@@ -44,14 +49,20 @@ const rangeRing = new THREE.Mesh(
 rangeRing.position.y = 0.05;
 scene.add(rangeRing);
 
+let composer;                              // set up after the models have loaded
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  composer?.setSize(innerWidth, innerHeight);
 });
 
 await loadModels();
 initTower(scene, tower);
 initFx(scene);
+initPortals(scene);
+initScenery(scene);
+onThemeChange(themeScenery);
+themeScenery(0x4f7a3a);
 document.getElementById('load').style.opacity = 0;
 setTimeout(() => document.getElementById('load').remove(), 700);
 
@@ -63,7 +74,14 @@ $('m-prog').textContent = `Chapter ${Math.min(sv.unlocked || 1, 5)} unlocked`;
 $('m-best').textContent = sv.best ? `Best: wave ${sv.best}` : '';
 $('mute').onclick = toggleMute;
 $('mute').textContent = isMuted() ? '🔇' : '🔊';
-const begin = (mode, ch) => { sfx('click'); $('menu').hidden = true; $('chapter').hidden = true; clearEnemies(scene); clearArrows(scene); game.cleared = false; startMode(scene, mode, ch); applyShop(); game.menu = false; };
+// carryOn: the next story chapter of the same run (keeps upgrades; Shop bonuses are already in them)
+const begin = (mode, ch, carryOn) => {
+  sfx('click'); $('menu').hidden = true; $('chapter').hidden = true;
+  clearEnemies(scene); clearArrows(scene); clearShots(); game.cleared = false;
+  startMode(scene, mode, ch);
+  if (carryOn) nextChapter(); else applyShop();
+  game.menu = false;
+};
 const refreshGold = () => { $('m-gold').textContent = `💎 ${emeralds()}`; };
 refreshGold();
 $('m-shop').onclick = () => { sfx('click'); $('menu').hidden = true; $('shop').hidden = false; renderShop($('shop'), () => sfx('levelup')); };
@@ -91,6 +109,19 @@ addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') setPause(!game.paused);
 });
+// ---- game speed (F / button): the battle is simulated several times per drawn frame ----
+const SPEEDS = [1, 2, 3, 5];
+let speed = 1;
+const nextSpeed = () => {
+  speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+  $('speedbtn').textContent = `${speed > 1 ? '⏩' : '▶'} ${speed}×`;
+  $('speedbtn').classList.toggle('fast', speed > 1);
+  sfx('click');
+};
+$('speedbtn').onclick = nextSpeed;
+addEventListener('keydown', e => {
+  if (e.target.tagName !== 'INPUT' && (e.key === 'f' || e.key === 'F')) nextSpeed();
+});
 let clearShown = false;
 function showChapterClear() {
   const ch = game.chapter, last = ch >= CHAPTERS.length;
@@ -99,7 +130,7 @@ function showChapterClear() {
   $('chtext').textContent = last ? 'You have defended the realm. Try Endless mode for a real challenge.' : `Next: ${CHAPTERS[ch].name} - ${CHAPTERS[ch].intro}`;
   const b = $('chbtns'); b.innerHTML = '';
   const add = (t, f) => { const x = document.createElement('button'); x.className = 'card'; x.innerHTML = `<b>${t}</b>`; x.onclick = f; b.append(x); };
-  if (!last) add('Next chapter', () => { clearShown = false; begin('story', ch + 1); });
+  if (!last) add('Next chapter', () => { clearShown = false; begin('story', ch + 1, true); });
   add('Main menu', () => location.reload());
   $('chapter').hidden = false;
 }
@@ -109,15 +140,16 @@ const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7a4cff, transparent: tru
 function ghostPass() {
   if (game.menu) return;
   ghostMat.opacity = 0.42 + Math.sin(clock.elapsedTime * 5) * 0.08;
-  const bg = scene.background, fog = scene.fog, sm = renderer.shadowMap.autoUpdate;
+  const bg = scene.background, fog = scene.fog, sm = renderer.shadowMap.autoUpdate, clear = renderer.autoClear;
   scene.background = null; scene.fog = null; scene.overrideMaterial = ghostMat;
   renderer.shadowMap.autoUpdate = false; renderer.autoClear = false;
   camera.layers.set(1);
   renderer.render(scene, camera);
   camera.layers.set(0);
-  renderer.autoClear = true; renderer.shadowMap.autoUpdate = sm;
+  renderer.autoClear = clear; renderer.shadowMap.autoUpdate = sm;
   scene.overrideMaterial = null; scene.background = bg; scene.fog = fog;
 }
+composer = initPost(renderer, scene, camera, ghostPass);
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
@@ -133,26 +165,34 @@ renderer.setAnimationLoop(() => {
   }
   if (game.over && !gameOverShown) { gameOverShown = true; ui.showGameOver(); }
 
-  updateWaves(dt, scene, ui);
-  updateEnemies(dt, scene);
-  updateCombat(dt, scene);
   animateFlag(tower, clock.elapsedTime);
   updateTower(frame, clock.elapsedTime);
-  updateKnights(dt, scene);
-  updateHelpers(dt, scene);
-  updateZones(dt, scene);
-  updateFx(dt);
-  $('pausebtn').style.display = game.menu || game.over ? 'none' : '';
+  for (let i = 0; i < speed; i++) {
+    // stop stepping as soon as something pauses the battle (level-up, defeat, chapter cleared)
+    const step = i && (game.leveling || game.over || game.cleared) ? 0 : dt;
+    if (i && !step) break;
+    updateWaves(step, scene, ui);
+    updateEnemies(step, scene);
+    updateCombat(step, scene);
+    updateKnights(step, scene);
+    updateHelpers(step, scene);
+    updateZones(step, scene);
+    updateShots(step);
+    updateFx(step);
+  }
+  updatePortals(frame);
+  updateScenery(frame, clock.elapsedTime);
+  $('pausebtn').style.display = $('speedbtn').style.display = game.menu || game.over ? 'none' : '';
   updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
   controls.update();
   ui.updateHud();
   const sk = shakeStep(frame);
   camera.position.add(sk);
-  renderer.render(scene, camera);
-  ghostPass();
+  composer.render();
   camera.position.sub(sk);
   updateBars(camera);
+  updateNumbers(frame, camera);
 });
 
 initDev(scene);

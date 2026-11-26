@@ -1,14 +1,67 @@
 import * as THREE from 'three';
 
-export const SPAWN_R = 30;
+export const SPAWN_R = 35;
 export const TOWER_R = 3.2;
 
-let groundMesh;
+let groundMesh, themeSky;
+const onTheme = [];
+export const onThemeChange = fn => onTheme.push(fn);
+
+// soft round glow, used for light pools on the ground
+let soft;
+export function softTexture() {
+  if (soft) return soft;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, '#fff'); g.addColorStop(0.5, '#fff6'); g.addColorStop(1, '#fff0');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  return (soft = new THREE.CanvasTexture(c));
+}
+
+// mottled near-white texture, tinted by the material colour
+function noiseTexture(repeat) {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#e6e6e6'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) {
+    const v = 190 + Math.floor(Math.random() * 66), r = 1 + Math.random() * (i < 120 ? 22 : 4);
+    const px = Math.random() * 256, py = Math.random() * 256;
+    x.fillStyle = `rgba(${v},${v},${v},${i < 120 ? 0.35 : 0.75})`;
+    for (const dx of [-256, 0, 256]) for (const dy of [-256, 0, 256]) { x.beginPath(); x.arc(px + dx, py + dy, r, 0, 6.29); x.fill(); }   // seamless
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+
+// gradient sky with stars: horizon matches the fog, darker overhead
+function buildSky(scene) {
+  themeSky = { horizon: { value: new THREE.Color(0x1d2540) }, top: { value: new THREE.Color(0x070a18) } };
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(190, 32, 20), new THREE.ShaderMaterial({
+    uniforms: themeSky, side: THREE.BackSide, depthWrite: false, fog: false,
+    vertexShader: 'varying vec3 vP; void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform vec3 horizon, top; varying vec3 vP; void main() { gl_FragColor = vec4(mix(horizon, top, smoothstep(0.0, 0.45, normalize(vP).y)), 1.0); }',
+  }));
+  dome.renderOrder = -1;
+  scene.add(dome);
+  const pts = [];
+  for (let i = 0; i < 700; i++) {
+    const v = new THREE.Vector3().randomDirection(); v.y = Math.abs(v.y) * 0.9 + 0.06;
+    pts.push(v.normalize().multiplyScalar(180));
+  }
+  scene.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.PointsMaterial({ color: 0xdfe6ff, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: false })));
+}
+
 // chapter look: ground colour + sky/fog colour
 export function setTheme(scene, { ground, sky }) {
   groundMesh.material.color.setHex(ground);
   scene.background.setHex(sky);
   scene.fog.color.setHex(sky);
+  themeSky.horizon.value.setHex(sky);
+  themeSky.top.value.setHex(sky).multiplyScalar(0.22);
+  onTheme.forEach(fn => fn(ground));
 }
 
 export function buildWorld(scene, renderer) {
@@ -25,10 +78,12 @@ export function buildWorld(scene, renderer) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  // ground: big grass disc with a darker rim
+  buildSky(scene);
+
+  // ground: big grass disc
   const ground = new THREE.Mesh(
     new THREE.CircleGeometry(80, 64).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0x4f7a3a, roughness: 1 }));
+    new THREE.MeshStandardMaterial({ color: 0x4f7a3a, roughness: 1, map: noiseTexture(14) }));
   ground.receiveShadow = true;
   scene.add(ground);
   groundMesh = ground;
@@ -36,15 +91,16 @@ export function buildWorld(scene, renderer) {
   // dirt courtyard around the tower
   const dirt = new THREE.Mesh(
     new THREE.CircleGeometry(9, 48).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0x8a7556, roughness: 1 }));
+    new THREE.MeshStandardMaterial({ color: 0x8a7556, roughness: 1, map: noiseTexture(3) }));
   dirt.position.y = 0.02; dirt.receiveShadow = true;
   scene.add(dirt);
 
   // spawn circle: ring of glowing standing stones
   const stoneMat = new THREE.MeshStandardMaterial({ color: 0x77798a, roughness: 0.9 });
-  const glow = new THREE.MeshBasicMaterial({ color: 0xc9a24a });
+  const glow = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xc9a24a).multiplyScalar(1.8) });
   for (let i = 0; i < 48; i++) {
     const a = (i / 48) * Math.PI * 2;
+    if ([0, 1, 7].includes(i % 8)) continue;       // leave room for the six magic doors (at 30 + n*60 degrees)
     const h = 1 + Math.random() * 0.8;
     const s = new THREE.Mesh(new THREE.BoxGeometry(0.8, h, 0.6), stoneMat);
     s.position.set(Math.cos(a) * (SPAWN_R + 3), h / 2, Math.sin(a) * (SPAWN_R + 3));
@@ -102,7 +158,7 @@ function buildTower() {
   const doorM = new THREE.MeshStandardMaterial({ color: 0x4a3220 });
   const door = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.6, 0.5), doorM);
   door.position.set(0, 2.1, 3.7); g.add(door);
-  const winM = new THREE.MeshBasicMaterial({ color: 0xffc766 });
+  const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffc766).multiplyScalar(1.7) });
   for (const [y, a] of [[7, 0.5], [8.5, -0.9], [7.5, 2.2]]) {
     const w = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 0.3), winM);
     w.position.set(Math.sin(a) * 3.35, y, Math.cos(a) * 3.35); w.rotation.y = a; g.add(w);

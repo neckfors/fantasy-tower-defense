@@ -15,6 +15,9 @@ export function damageTower(n) {
   if (game.towerHp === 0) game.over = true;
 }
 
+export const MAX_RANGE = 33;   // just inside the portals
+export const addRange = (g, mul) => (g.range = Math.min(MAX_RANGE, g.range * mul));
+
 export const dmgNow = () => game.dmg * (game.rallyT > 0 ? 1.5 : 1);   // Rally Cry buff
 export const rateNow = () => game.rate * (game.rapidT > 0 ? 2 : 1);   // Rapid Fire buff
 
@@ -27,7 +30,7 @@ export function checkLevel() {
   if (!game.leveling && game.xp >= game.xpNeed) {
     game.xp -= game.xpNeed;
     game.level++;
-    game.xpNeed = Math.round(game.xpNeed * 1.35);
+    game.xpNeed = Math.round(game.xpNeed * 1.22);
     game.leveling = true;
   }
 }
@@ -35,12 +38,12 @@ export function checkLevel() {
 export const UPGRADES = [...MORE,
   { icon: '🏹', name: 'Sharper Arrows', desc: '+25% damage', apply: g => (g.dmg *= 1.25) },
   { icon: '⚡', name: 'Quick Draw', desc: '+20% fire rate', apply: g => (g.rate *= 1.2) },
-  { icon: '🔭', name: 'Eagle Eye', desc: '+12% range', apply: g => (g.range *= 1.12) },
+  { icon: '🔭', name: 'Eagle Eye', desc: '+8% range and +5% damage', max: 3, apply: g => { addRange(g, 1.08); g.dmg *= 1.05; } },
   { icon: '🛡', name: 'Reinforced Walls', desc: '+100 max HP and heal 100', apply: g => { g.maxHp += 100; g.towerHp = Math.min(g.maxHp, g.towerHp + 100); } },
-  { icon: '🎯', name: 'Volley', desc: '+1 arrow per shot (different targets)', apply: g => (g.multi += 1) },
-  { icon: '👻', name: 'Shadow Knights', desc: '+1 shadow knight that leaves the tower and fights enemies', apply: g => (g.knights = (g.knights || 0) + 1) },
+  { icon: '🎯', name: 'Volley', desc: '+1 magic bolt per cast (spreads over several enemies)', apply: g => (g.multi += 1) },
+  { icon: '👻', name: 'Shadow Knights', desc: '+1 shadow knight that leaves the tower and fights enemies', max: 3, apply: g => (g.knights = (g.knights || 0) + 1) },
   { icon: '🌩', name: 'Tesla Coil', desc: 'A Tesla coil on the tower zaps the nearest enemy and chains lightning to 2/3/4 more', max: 3, apply: g => (g.tesla = (g.tesla || 0) + 1) },
-  { icon: '🔥', name: 'Fire Arrows', desc: 'Arrows set enemies on fire (burn damage over 3s)', apply: g => (g.fire = (g.fire || 0) + 1) },
+  { icon: '🔥', name: 'Fire Arrows', desc: 'Arrows set enemies on fire (burn damage over 3s)', max: 3, apply: g => (g.fire = (g.fire || 0) + 1) },
   { icon: '🏰', name: 'Ballista', desc: 'A heavy bolt hits the toughest enemy for 4x damage every 4s (stacks faster)', max: 3, apply: g => (g.ballista = (g.ballista || 0) + 1) },
   { icon: '💥', name: 'Critical Strikes', desc: '+15% chance for arrows to deal 2.5x damage', max: 3, apply: g => (g.crit = (g.crit || 0) + 0.15) },
   { icon: '❤', name: 'Mending Stones', desc: 'Heal 40% of max HP', apply: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.4)) },

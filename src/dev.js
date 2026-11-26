@@ -2,6 +2,7 @@ import { game, addXp } from './game.js';
 import { jumpToWave } from './waves.js';
 import { spawnEnemy, clearEnemies, enemies, isAlive, damageEnemy } from './enemies.js';
 import { clearArrows } from './combat.js';
+import { clearShots } from './shots.js';
 
 // Hidden developer panel: type the secret code anywhere to toggle.
 export function initDev(scene) {
@@ -16,7 +17,7 @@ export function initDev(scene) {
     <label><input id="dgod" type="checkbox"> God mode</label>`;
   document.body.append(el);
   const $ = id => el.querySelector('#' + id);
-  const go = n => { clearEnemies(scene); clearArrows(scene); jumpToWave(Math.max(1, n | 0)); };
+  const go = n => { clearEnemies(scene); clearArrows(scene); clearShots(); jumpToWave(Math.max(1, n | 0)); };
   $('dgo').onclick = () => go(+$('dw').value);
   $('dcgo').onclick = () => { game.coins = Math.max(0, (game.coins || 0) + (+$('dc').value || 0)); };
   $('dboss').onclick = () => go(Math.floor(game.wave / 10) * 10 + 10);

@@ -11,7 +11,7 @@ const STONE = mat(0x6b6f80, { roughness: 0.95 });
 const WOOD = mat(0x5a3d26);
 const RUNE = new THREE.MeshBasicMaterial({ color: 0xffd77a });
 
-let fx, orbit, crown, beacon, beaconLight, heal = [], mixer, idle, cast, sorc, sig = '';
+let fx, orbit, crown, beacon, beaconLight, heal = [], mixer, idle, cast, raise, sorc, yaw = 0, sig = '';
 
 export function initTower(scene, tower) {
   fx = new THREE.Group(); tower.add(fx);
@@ -29,14 +29,24 @@ export function initTower(scene, tower) {
   const clip = n => THREE.AnimationClip.findByName(m.animations, n);
   idle = mixer.clipAction(clip('Idle')); idle.play();
   cast = mixer.clipAction(clip('Spellcast_Shoot')); cast.setLoop(THREE.LoopOnce); cast.timeScale = 2;
+  raise = mixer.clipAction(clip('Spellcast_Raise') || clip('Spellcast_Shoot')); raise.setLoop(THREE.LoopOnce); raise.timeScale = 2.4;
   mixer.addEventListener('finished', () => idle.setEffectiveWeight(1));
 }
 
-export function sorcererCast(pos) {
-  if (!sorc) return;
-  sorc.rotation.y = Math.atan2(pos.x, pos.z);
+// Turn to what is being attacked and play the matching cast. Returns the staff tip (where bolts leave from).
+export function sorcererCast(positions, multi) {
+  if (!sorc) return null;
+  // one enemy: face it. Several: face the middle of the group (the first one if they surround the tower)
+  let x = 0, z = 0;
+  for (const p of positions) { const d = Math.hypot(p.x, p.z) || 1; x += p.x / d; z += p.z / d; }
+  if (Math.hypot(x, z) < positions.length * 0.35) { x = positions[0].x; z = positions[0].z; }
+  yaw = Math.atan2(x, z);
+  if (!multi) sorc.rotation.y = yaw;               // single target: snap onto it so the shot leaves the staff
+  const next = multi ? raise : cast;
   idle.setEffectiveWeight(0);
-  cast.reset().play();
+  if (cast !== raise) (next === raise ? cast : raise).stop();
+  next.reset().play();
+  return new THREE.Vector3(Math.sin(yaw) * 1.5, 15.7, Math.cos(yaw) * 1.5);
 }
 
 function ring(count, fn) { for (let i = 0; i < count; i++) fx.add(fn(i, (i / count) * Math.PI * 2)); }
@@ -115,6 +125,8 @@ function rebuild() {
 export function updateTower(dt, t) {
   if (!fx) return;
   mixer.update(dt);
+  const turn = Math.atan2(Math.sin(yaw - sorc.rotation.y), Math.cos(yaw - sorc.rotation.y));
+  sorc.rotation.y += turn * Math.min(1, dt * 12);
   const s = [game.level, game.multi, ...Object.entries(game.picks)].join();
   if (s !== sig) { sig = s; rebuild(); }
   if (orbit) orbit.rotation.y += dt * 0.5;

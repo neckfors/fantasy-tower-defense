@@ -164,6 +164,7 @@ export function updateFx(dt) {
       const d = tmp.length();
       if (d < 1) {
         burst(TOP, o.emerald ? 0x3dff8a : 0xffd23f, o.emerald ? 18 : 6, 4, 0.5, 0, 0);
+        if (o.emerald) { const h = document.getElementById('gemhud'); h.classList.remove('got'); void h.offsetWidth; h.classList.add('got'); }
         sfx(o.emerald ? 'gem' : 'coin'); scene.remove(m); pickups.splice(i, 1); continue;
       }
       m.position.addScaledVector(tmp.divideScalar(d), Math.min(d, (6 + o.spd) * dt));

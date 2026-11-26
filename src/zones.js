@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { game, dmgNow } from './game.js';
-import { TOWER_R } from './world.js';
+import { TOWER_R, SPAWN_R } from './world.js';
 import { enemies, isAlive, damageEnemy } from './enemies.js';
 import { spark, burst } from './fx.js';
 import { tier, GOLD, DIAMOND } from './upgrades-more.js';
@@ -30,21 +30,31 @@ function buildSpikes(scene) {
 }
 
 let moatMesh = null, moatN = 0, moatR = 0;
+const bankMat = new THREE.MeshStandardMaterial({ color: 0x6d6a62, roughness: 1 });
 function buildMoat(scene) {
-  if (moatMesh) scene.remove(moatMesh);
+  if (moatMesh) { scene.remove(moatMesh); moatMesh.traverse(o => o.geometry?.dispose()); moatMesh.material.dispose(); }
   const col = tier(game.moat, 0x2a7fd0, 0x2fc46a, 0x9a4cff);
   const w = 2 + game.moat * 1.5;                   // band centred on the range ring
-  game.moatIn = game.range - w / 2; game.moatOut = game.range + w / 2;
+  const mid = Math.min(game.range, SPAWN_R - 2 - w / 2);   // never past the portals, so it stays in view
+  game.moatIn = mid - w / 2; game.moatOut = mid + w / 2;
   moatMesh = new THREE.Mesh(new THREE.RingGeometry(game.moatIn, game.moatOut, 64),
-    new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }));
+    new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.18, roughness: 0.25, metalness: 0.2, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }));
   moatMesh.rotation.x = -Math.PI / 2; moatMesh.position.y = 0.09;
+  for (const r of [game.moatIn, game.moatOut]) {   // stone banks
+    const bank = new THREE.Mesh(new THREE.TorusGeometry(r, 0.22, 6, 96), bankMat);
+    bank.receiveShadow = true; moatMesh.add(bank);
+  }
   scene.add(moatMesh);
   moatN = game.moat; moatR = game.range;
 }
 
 export function updateZones(dt, scene) {
+  if (!dt) return;
+  if (!game.moat && moatMesh) { moatMesh.visible = false; moatN = 0; }       // a new run starts without the old moat and spikes
+  if (spikeGroup && !game.spikes) { scene.remove(spikeGroup); spikeGroup = null; spikeN = 0; }
   if (game.moat) {
     if (moatN !== game.moat || moatR !== game.range) buildMoat(scene);
+    moatMesh.visible = true;
     moatMesh.material.opacity = 0.55 + Math.sin(performance.now() / 400) * 0.08;
     if (Math.random() < dt * 30) {
       const a = Math.random() * Math.PI * 2, r = game.moatIn + Math.random() * (game.moatOut - game.moatIn);
@@ -66,7 +76,7 @@ export function updateZones(dt, scene) {
         if (!isAlive(e) || e.t.stop || e.t.fly) continue;
         const p = e.obj.position, d = Math.hypot(p.x, p.z);
         if (d > TOWER_R + 1.3 + e.obj.scale.x * 0.5 + 3.5) continue;
-        damageEnemy(e, dmgNow() * 0.4 * game.spikes, true);
+        damageEnemy(e, dmgNow() * 0.18 * game.spikes, true, 'spike');
         burst(new THREE.Vector3(p.x, 0.8, p.z), 0xc8ccd6, 4, 3, 0.25, 1, -4);
       }
     }
