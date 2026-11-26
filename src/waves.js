@@ -1,6 +1,7 @@
 import { game } from './game.js';
 import { enemies, isAlive, spawnEnemy, pickType, TYPES } from './enemies.js';
 import { openPortals, closePortals, randomPortal, bossPortal } from './portals.js';
+import { startCutscene } from './cutscene.js';
 
 const w = { toSpawn: 0, spawnT: 0, breakT: 2, running: false, boss: false, squad: 0, door: null };
 export const isBossWave = n => n % 10 === 0;
@@ -15,14 +16,17 @@ export function updateWaves(dt, scene, ui) {
       w.boss = isBossWave(game.wave);
       w.squad = 0;
       openPortals(game.wave, w.boss);
-      ui.banner(w.boss ? `Wave ${game.wave} - BOSS!` : `Wave ${game.wave}`);
+      if (!w.boss) ui.banner(`Wave ${game.wave}`);          // boss waves get the cutscene instead
     }
     return;
   }
   const hp = 24 + game.wave * 4;
   if (w.boss) {                                   // boss arrives first, with the usual crowd
     w.boss = false;
-    spawnEnemy(scene, 'boss', hp * (game.wave / 10), bossPortal());
+    const door = bossPortal();
+    startCutscene(spawnEnemy(scene, 'boss', hp * (game.wave / 10), door), door);
+    w.spawnT = 1.2;
+    return;
   }
   if (w.toSpawn > 0 && (w.spawnT -= dt) <= 0) {
     // enemies march out in squads of 3-5 through the same door, with a pause between squads

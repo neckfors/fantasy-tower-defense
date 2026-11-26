@@ -8,7 +8,8 @@ import { banner } from './ui.js';
 import { sfx } from './audio.js';
 
 // The effects of the legendary upgrades that act on their own during a battle.
-const STORM_EVERY = 15, WARP_EVERY = 30, WARP_TIME = 4, PHOENIX_R = 20;
+export const STORM_EVERY = 15, WARP_EVERY = 30, WARP_TIME = 4;
+const PHOENIX_R = 20;
 const stormMat = new THREE.LineBasicMaterial({ color: 0xd9b8ff });
 const BASE = new THREE.Vector3(0, 0.3, 0);
 

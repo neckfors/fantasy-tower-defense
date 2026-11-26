@@ -27,6 +27,7 @@ import { clearArrows } from './combat.js';
 import { initDisplay, isFullscreen } from './display.js';
 import { updateLegendary } from './legendary.js';
 import { updatePanel } from './panel.js';
+import { initCutscene, updateCutscene } from './cutscene.js';
 import { isLegendaryChoice } from './game.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -106,7 +107,7 @@ $('m-story').onclick = () => {
 $('chback').onclick = () => { sfx('click'); $('chsel').hidden = true; $('menu').hidden = false; };
 
 // ---- pause (P / Esc / button) ----
-const setPause = on => { if (on && (game.menu || game.over || game.leveling || game.cleared)) return; game.paused = on; $('pause').hidden = !on; sfx(on ? 'pause' : 'resume'); };
+const setPause = on => { if (on && (game.menu || game.over || game.leveling || game.cleared || game.cine)) return; game.paused = on; $('pause').hidden = !on; sfx(on ? 'pause' : 'resume'); };
 $('pausebtn').onclick = () => setPause(!game.paused);
 $('resume').onclick = () => setPause(false);
 $('quit').onclick = () => location.reload();
@@ -143,7 +144,7 @@ function showChapterClear() {
 // shadowy silhouettes: enemies hidden behind the tower/scenery are redrawn as translucent purple shades
 const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7a4cff, transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -1500 });
 function ghostPass() {
-  if (game.menu) return;
+  if (game.menu || game.cine) return;
   ghostMat.opacity = 0.42 + Math.sin(clock.elapsedTime * 5) * 0.08;
   const bg = scene.background, fog = scene.fog, sm = renderer.shadowMap.autoUpdate, clear = renderer.autoClear;
   scene.background = null; scene.fog = null; scene.overrideMaterial = ghostMat;
@@ -157,12 +158,13 @@ function ghostPass() {
 composer = initPost(renderer, scene, camera, ghostPass);
 initQuality(renderer, composer, scene);
 initDisplay(renderer, composer);
+initCutscene(scene, camera, controls);
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
   const raw = clock.getDelta(), frame = Math.min(raw, 0.05);
   watchFrame(raw);
-  const frozen = game.leveling || game.over || game.menu || game.cleared || game.paused;
+  const frozen = game.leveling || game.over || game.menu || game.cleared || game.paused || game.cine;
   if (game.cleared && !clearShown) { clearShown = true; showChapterClear(); }
   const dt = frozen ? 0 : frame;
 
@@ -178,7 +180,7 @@ renderer.setAnimationLoop(() => {
   updateTower(frame, clock.elapsedTime);
   for (let i = 0; i < speed; i++) {
     // stop stepping as soon as something pauses the battle (level-up, defeat, chapter cleared)
-    const step = i && (game.leveling || game.over || game.cleared) ? 0 : dt;
+    const step = i && (game.leveling || game.over || game.cleared || game.cine) ? 0 : dt;
     if (i && !step) break;
     updateWaves(step, scene, ui);
     updateEnemies(step, scene);
@@ -188,7 +190,7 @@ renderer.setAnimationLoop(() => {
     updateHelpers(step, scene);
     updateZones(step, scene);
     updateShots(step);
-    updateFx(step);
+    updateFx(game.cine ? frame / speed : step);      // effects keep moving during the boss cutscene
   }
   updatePortals(frame);
   updateScenery(frame, clock.elapsedTime);
@@ -198,7 +200,8 @@ renderer.setAnimationLoop(() => {
   updatePanel();
   updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
-  controls.update();
+  if (game.cine) updateCutscene(frame);
+  else controls.update();
   ui.updateHud();
   const sk = shakeStep(frame);
   camera.position.add(sk);

@@ -33,6 +33,7 @@ export function checkLevel() {
     game.level++;
     game.xpNeed = Math.round(game.xpNeed * 1.22);
     game.leveling = true;
+    if (isLegendaryLevel(game.level) && game.picks['Phoenix Heart']) game.phoenix = true;   // a used Phoenix Heart comes back
   }
 }
 
@@ -50,17 +51,17 @@ export const UPGRADES = [...MORE,
   { icon: '❤', name: 'Mending Stones', desc: 'Heal 40% of max HP', apply: g => (g.towerHp = Math.min(g.maxHp, g.towerHp + g.maxHp * 0.4)) },
 ];
 
-// Legendary upgrades: each can be taken once, offered only at levels 5, 10, 20, 30, 40...
+// Legendary upgrades: each can be taken once, offered only at levels 10, 20, 30, 40...
 export const LEGENDARY = [
   { icon: '🌩', name: 'Arcane Storm', desc: 'Every 15 s, lightning strikes every enemy in range', apply: g => { g.storm = true; g.stormT = 3; } },
-  { icon: '🔥', name: 'Phoenix Heart', desc: 'Once, a fallen tower rises with half its health and burns nearby enemies', apply: g => (g.phoenix = true) },
+  { icon: '🔥', name: 'Phoenix Heart', desc: 'A fallen tower rises with half its health and burns nearby enemies. Recharges every 10 levels', apply: g => (g.phoenix = true) },
   { icon: '🧙', name: 'Twin Sorcerer', desc: 'A second wizard joins you on the tower, dealing 40% of your damage', apply: g => (g.twin = true) },
   { icon: '⏳', name: 'Time Warp', desc: 'Every 30 s, enemies nearly stop for 4 s', apply: g => { g.warp = true; g.warpCd = 3; g.warpT = 0; } },
   { icon: '👑', name: 'Golden Age', desc: '+50% coins and +25% XP', apply: g => { g.coinMul = 1.5; g.xpMul = (g.xpMul || 1) * 1.25; } },
   { icon: '🏯', name: 'Titan Walls', desc: '+50% max health, and the tower slowly repairs itself', apply: g => { const add = Math.round(g.maxHp * 0.5); g.maxHp += add; g.towerHp += add; g.titan = true; } },
 ].map(u => ({ ...u, legendary: true }));
 
-export const isLegendaryLevel = n => n === 5 || (n >= 10 && n % 10 === 0);
+export const isLegendaryLevel = n => n >= 10 && n % 10 === 0;
 const legendLeft = () => LEGENDARY.filter(u => !game.picks[u.name]);
 export const isLegendaryChoice = () => isLegendaryLevel(game.level) && legendLeft().length > 0;
 // the next level that will offer a legendary, or 0 when all are taken

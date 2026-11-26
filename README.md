@@ -8,7 +8,9 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **Game speed:** the ▶ button (or F) switches between 1× and 2×.
 
-**Legendary upgrades:** at levels 5 and 10, then every 10 levels (20, 30, 40…), you choose 1 of 3 legendary cards on a special golden screen. Each can be taken only once: Arcane Storm (every 15 s lightning strikes every enemy in range), Phoenix Heart (once, a fallen tower rises with half its health and burns nearby enemies), Twin Sorcerer (a second wizard dealing 40% of your damage), Time Warp (every 30 s enemies nearly stop for 4 s), Golden Age (+50% coins, +25% XP) and Titan Walls (+50% max health and slow self-repair). The level bar, the power panel and the level-up screen tell you when the next one is coming.
+**Legendary upgrades:** every 10 levels (10, 20, 30…) you choose 1 of 3 legendary cards on a special golden screen. Each can be taken only once: Arcane Storm (every 15 s lightning strikes every enemy in range), Phoenix Heart (a fallen tower rises with half its health and burns nearby enemies; once used, it recharges at the next legendary level), Twin Sorcerer (a second wizard dealing 40% of your damage), Time Warp (every 30 s enemies nearly stop for 4 s), Golden Age (+50% coins, +25% XP) and Titan Walls (+50% max health and slow self-repair). The level bar, the power panel and the level-up screen tell you when the next one is coming. The ones you own stay visible in the power panel (even when it is closed) with a countdown (Arcane Storm, Time Warp), Ready, or Used ↻ with the level it comes back (Phoenix Heart), or On.
+
+**Boss arrival:** when a Giant Warlord comes, the battle stops for a short cutscene: the camera swoops to the red portal, the boss steps out of the dark, stomps, and gets a name card. Tap or press Space / Esc to skip it.
 
 **Your power:** a panel on the left shows your damage, fire rate and range bonuses, bolts per cast, your legendaries and your upgrades. On small screens it starts closed; tap its title to open it. Both it and the Armoury have a Less / More button that hides the explanations to take up less space (remembered).
 

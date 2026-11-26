@@ -225,3 +225,47 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;back
 .made{margin:22px 0 4px;color:#c9b88a;font-size:15px}
 .menusupport{color:#ffd77a;text-decoration:none;border:1px solid #c9a24a;border-radius:10px;padding:6px 14px;background:#1a1626cc}
 .menusupport:hover{background:#2a2140}
+
+/* boss arrival cutscene */
+body.cine > *:not(canvas):not(#cine) { visibility: hidden !important; }
+#cine { position: fixed; inset: 0; z-index: 40; overflow: hidden; cursor: pointer; color: #f3e9d2; font-family: Georgia, serif; text-align: center; user-select: none; }
+#cine[hidden] { display: none; }
+#cine > * { position: absolute; left: 0; right: 0; pointer-events: none; }
+.cdim { top: 0; bottom: 0; background: radial-gradient(ellipse at center, #0000 30%, #05020ad9 100%); }
+.cbar { height: 10vh; background: #000; }
+.cbar.top { top: 0; --o: -100%; }
+.cbar.bot { bottom: 0; --o: 100%; }
+.cflash { top: 0; bottom: 0; opacity: 0; background: radial-gradient(circle, #ffdfb0, #ff2a1a); }
+.cwarn { top: 15vh; opacity: 0; padding: 0 12px; letter-spacing: .35em; font-size: clamp(13px, 2.6vw, 24px); color: #ff8a7a; text-shadow: 0 0 12px #ff2a1a; }
+.cname { bottom: 13vh; opacity: 0; }
+.cname h1 { margin: 0; font-size: clamp(30px, 8vmin, 84px); letter-spacing: .06em; background: linear-gradient(#fff0d0, #ff9a3a 50%, #c11f12); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 0 #000) drop-shadow(0 0 18px #ff3a1a); }
+.cname p { margin: 0; font-style: italic; font-size: clamp(15px, 2.6vmin, 24px); text-shadow: 0 2px 4px #000; }
+.crule { width: min(480px, 70vw); height: 2px; margin: 6px auto; background: linear-gradient(90deg, #0000, #ffb52e, #0000); }
+.chp { width: min(420px, 66vw); height: 14px; margin: 8px auto 0; border: 2px solid #c9a24a; background: #1a0f08; }
+.chp i { display: block; width: 0; height: 100%; background: linear-gradient(#ff6a5a, #a51205); }
+.cskip { bottom: 3vh; font-size: 13px; color: #a89f8c; }
+/* timed to match src/cutscene.js (8 s) */
+#cine.play .cbar { animation: cbars 8s ease both; }
+#cine.play .cdim { animation: cdim 8s both; }
+#cine.play .cflash { animation: cflash 8s both; }
+#cine.play .cwarn { animation: cwarn 8s both; }
+#cine.play .cname { animation: cname 8s cubic-bezier(.2, 1.6, .4, 1) both; }
+#cine.play .chp i { animation: cfill 8s ease-out both; }
+@keyframes cbars { 0% { transform: translateY(var(--o)); } 8%, 87% { transform: none; } 97%, 100% { transform: translateY(var(--o)); } }
+@keyframes cdim { 0% { opacity: 0; } 18%, 83% { opacity: 1; } 97%, 100% { opacity: 0; } }
+@keyframes cflash { 0%, 59.5% { opacity: 0; } 60.5% { opacity: .7; } 68%, 100% { opacity: 0; } }
+@keyframes cwarn { 0%, 5% { opacity: 0; } 10% { opacity: 1; } 15% { opacity: .25; } 20% { opacity: 1; } 25% { opacity: .25; } 29% { opacity: 1; } 36%, 100% { opacity: 0; } }
+@keyframes cname { 0%, 59.5% { opacity: 0; transform: scale(2.6); } 64%, 83% { opacity: 1; transform: none; } 90%, 100% { opacity: 0; transform: translateY(24px); } }
+@keyframes cfill { 0%, 66% { width: 0; } 80%, 100% { width: 100%; } }
+/* owned legendaries: always shown, with countdown / used up */
+#powerlegs .pu.leg { position: relative; overflow: hidden; }
+#powerlegs .pu.leg::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--full); background: #5ee0ff; }
+#powerlegs .pu.leg.ready::after, #powerlegs .pu.leg.active::after { background: #8ff0a4; }
+#powerlegs .st { white-space: nowrap; font-size: 11px; color: #bfe9ff; }
+#powerlegs .ready .st { color: #8ff0a4; font-weight: bold; }
+#powerlegs .active .st { color: #fff; font-weight: bold; text-shadow: 0 0 6px #5ee0ff; }
+#powerlegs .on .st { color: #ffe58a; }
+#powerlegs .used { filter: grayscale(1); opacity: .65; box-shadow: none; }
+#powerlegs .used .st { color: #ddd; }
+#power.closed #powerlegs .n { display: none; }
+#power.closed #powerlegs .pu.leg { justify-content: space-between; }
