@@ -14,6 +14,8 @@ Browser-based 3D tower defense: one tower in the middle, enemies walk in a strai
 
 **Play:** https://neckfors.github.io/fantasy-tower-defense/
 
+The icon (a castle tower) is in `icons/`; it shows on the browser tab and when the page is added to a home screen.
+
 ## Run
 ```
 py -3 -I -m http.server 8123
