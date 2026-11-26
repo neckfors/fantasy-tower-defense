@@ -9,7 +9,7 @@ import { lob } from './shots.js';
 import { poisonBurst } from './combat.js';
 import { damageTower, addXp, game, dmgNow } from './game.js';
 import { sfx } from './audio.js';
-import { addCoins, rollEmerald } from './shop.js';
+import { addCoins, rollEmerald, emeralds } from './shop.js';
 import { emeraldToast, removeBar } from './hpbars.js';
 import { pickup, deathFx, hurtFx, shake } from './fx.js';
 
@@ -102,6 +102,7 @@ export function damageEnemy(e, dmg, quiet, kind = 'hit') {
     const a = e.mixer.clipAction(e.clip(e.t.anims?.die ?? 'Death_A'));
     a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; a.reset().play();
     game.kills++;
+    if (e.type === 'boss' && !game.cine) game.bossFallen = { boss: e, gems: emeralds() };   // main.js starts the death cutscene
     if (e.poison) poisonBurst(e.obj.parent, e);         // Poison Tips: toxic cloud on death
     e.emerging = 0; e.obj.scale.setScalar(e.size);
     addXp(e.xp);
@@ -181,11 +182,26 @@ export function updateEnemies(dt, scene) {
         e.atk = 0;
         strike(e, scene);
       }
-    } else {                               // dead: lie there, then sink away
-      e.timer += dt;
-      if (e.t.fly && p.y > 0) p.y = Math.max(0, p.y - dt * 8);   // dragons crash to the ground
-      if (e.timer > 1.5) p.y -= dt * 0.6;
-      if (e.timer > 3.5) { scene.remove(e.obj); free(e.obj); enemies.splice(i, 1); }
-    }
+    } else fallStep(e, i, dt, scene);
+  }
+}
+
+// dead: lie there, then sink away
+function fallStep(e, i, dt, scene) {
+  const p = e.obj.position;
+  e.timer += dt;
+  if (e.t.fly && p.y > 0) p.y = Math.max(0, p.y - dt * 8);   // dragons crash to the ground
+  if (e.timer > 1.5) p.y -= dt * 0.6;
+  if (e.timer > 3.5) { scene.remove(e.obj); free(e.obj); enemies.splice(i, 1); }
+}
+
+// only the dead keep moving (boss death cutscene); `except` is animated by the cutscene itself
+export function updateDead(dt, scene, except) {
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+    if (e === except || e.state !== 'dead') continue;
+    e.mixer.update(dt);
+    setTint(e, 0);
+    fallStep(e, i, dt, scene);
   }
 }

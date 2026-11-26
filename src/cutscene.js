@@ -23,7 +23,7 @@ let camera, controls, scene;
 export function initCutscene(sc, cam, ctl) { scene = sc; camera = cam; controls = ctl; }
 
 // cracks in the ground in front of the door
-function crackTexture() {
+export function crackTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 256;
   const g = c.getContext('2d');
   g.lineCap = 'round'; g.shadowColor = '#ff3a10'; g.shadowBlur = 8; g.strokeStyle = '#ffa23a';

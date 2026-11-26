@@ -34,7 +34,7 @@ const xp = document.getElementById('xp');   // level bar lives under the Armoury
 if (xp) side.appendChild(xp);
 document.body.appendChild(side);
 
-const canBuy = () => !(game.leveling || game.over || game.menu || game.cleared || game.paused);
+const canBuy = () => !(game.leveling || game.over || game.menu || game.cleared || game.paused || game.cine);
 function buy(it) {
   if (!canBuy() || (game.coins || 0) < cost(it) || (it.can && !it.can())) return;
   game.coins -= cost(it); it.count++;

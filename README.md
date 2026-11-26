@@ -12,6 +12,8 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **Boss arrival:** when a Giant Warlord comes, the battle stops for a short cutscene: the camera swoops to the red portal, the boss steps out of the dark, stomps, and gets a name card. Tap or press Space / Esc to skip it.
 
+**Boss death:** killing a boss ends the wave with a short cutscene: the camera closes in, the boss falls, and a golden wave from where it lands wipes out every other enemy (you get all their XP and coins). Level-up choices wait until it is over. Tap or press Space / Esc to skip it.
+
 **Your power:** a panel on the left shows your damage, fire rate and range bonuses, bolts per cast, your legendaries and your upgrades. On small screens it starts closed; tap its title to open it. Both it and the Armoury have a Less / More button that hides the explanations to take up less space (remembered).
 
 **Day and night, fullscreen:** the ☀ / 🌙 button switches between day and night (looks only, remembered). The ⛶ button turns fullscreen on and off (Esc also leaves it); it is hidden in browsers that don't support it, such as on iPhone.
@@ -28,7 +30,7 @@ Browser-based 3D tower defense: one tower in the middle, enemies march in squads
 
 **Modes:** Story (5 chapters of 10 waves, boss at the end of each, progress saved in the browser) and Endless (best wave saved). **Sound:** generated in code (Web Audio); press M or click the speaker to mute.
 
-**Developer mode (hidden):** a secret code opens a panel: jump to any wave, add any number of coins, next boss wave, +level, kill all, god mode.
+**Developer mode:** switched off for now (the code is in `src/dev.js`; two commented-out lines in `src/main.js` turn it back on).
 
 **Play:** https://neckfors.github.io/fantasy-tower-defense/
 

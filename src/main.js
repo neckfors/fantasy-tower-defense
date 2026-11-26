@@ -12,7 +12,7 @@ import { updateCombat } from './combat.js';
 import { updateWaves } from './waves.js';
 import { game, checkLevel, pickUpgrades } from './game.js';
 import * as ui from './ui.js';
-import { initDev } from './dev.js';
+// import { initDev } from './dev.js';      // cheat code off for now
 import { initTower, updateTower } from './tower-fx.js';
 import { applyShop, nextChapter, emeralds, renderShop } from './shop.js';
 import { updateBars } from './hpbars.js';
@@ -28,6 +28,7 @@ import { initDisplay, isFullscreen } from './display.js';
 import { updateLegendary } from './legendary.js';
 import { updatePanel } from './panel.js';
 import { initCutscene, updateCutscene } from './cutscene.js';
+import { initBossDeath, startBossDeath, updateBossDeath, isBossDying } from './boss-death.js';
 import { isLegendaryChoice } from './game.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -159,6 +160,7 @@ composer = initPost(renderer, scene, camera, ghostPass);
 initQuality(renderer, composer, scene);
 initDisplay(renderer, composer);
 initCutscene(scene, camera, controls);
+initBossDeath(scene, camera, controls);
 const clock = new THREE.Clock();
 let gameOverShown = false;
 renderer.setAnimationLoop(() => {
@@ -168,7 +170,7 @@ renderer.setAnimationLoop(() => {
   if (game.cleared && !clearShown) { clearShown = true; showChapterClear(); }
   const dt = frozen ? 0 : frame;
 
-  if (game.leveling && !ui.isLevelOpen()) {
+  if (game.leveling && !game.cine && !ui.isLevelOpen()) {      // waits for a cutscene to end
     const legend = isLegendaryChoice();       // legendary levels offer 3, and don't use up Wise Tower
     const nPick = legend ? 3 : 3 + ((game.wise || 0) && game.wiseWave !== game.wave ? game.wise : 0);
     if (!legend) game.wiseWave = game.wave;
@@ -180,7 +182,7 @@ renderer.setAnimationLoop(() => {
   updateTower(frame, clock.elapsedTime);
   for (let i = 0; i < speed; i++) {
     // stop stepping as soon as something pauses the battle (level-up, defeat, chapter cleared)
-    const step = i && (game.leveling || game.over || game.cleared || game.cine) ? 0 : dt;
+    const step = i && (game.leveling || game.over || game.cleared || game.cine || game.bossFallen) ? 0 : dt;
     if (i && !step) break;
     updateWaves(step, scene, ui);
     updateEnemies(step, scene);
@@ -192,6 +194,11 @@ renderer.setAnimationLoop(() => {
     updateShots(step);
     updateFx(game.cine ? frame / speed : step);      // effects keep moving during the boss cutscene
   }
+  if (game.bossFallen && !game.cine) {
+    const fallen = game.bossFallen;
+    game.bossFallen = null;
+    if (!game.over) startBossDeath(fallen);
+  }
   updatePortals(frame);
   updateScenery(frame, clock.elapsedTime);
   const bar = game.menu || game.over ? 'none' : '';
@@ -200,7 +207,8 @@ renderer.setAnimationLoop(() => {
   updatePanel();
   updateSidebar();
   rangeRing.scale.set(game.range, 1, game.range);
-  if (game.cine) updateCutscene(frame);
+  if (isBossDying()) updateBossDeath(frame);
+  else if (game.cine) updateCutscene(frame);
   else controls.update();
   ui.updateHud();
   const sk = shakeStep(frame);
@@ -211,5 +219,5 @@ renderer.setAnimationLoop(() => {
   updateNumbers(frame, camera);
 });
 
-initDev(scene);
+// initDev(scene);                         // cheat code off for now: uncomment both lines to get it back
 window.__game = game; // handy for debugging in the console

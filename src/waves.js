@@ -7,6 +7,7 @@ const w = { toSpawn: 0, spawnT: 0, breakT: 2, running: false, boss: false, squad
 export const isBossWave = n => n % 10 === 0;
 
 export function updateWaves(dt, scene, ui) {
+  if (game.cine || game.leveling || game.bossFallen) return;   // the wave can't move on or end behind these
   if (!w.running) {
     if ((w.breakT -= dt) <= 0) {
       game.wave++;
@@ -41,6 +42,9 @@ export function updateWaves(dt, scene, ui) {
     if (game.mode === 'story' && isBossWave(game.wave)) game.cleared = true;
   }
 }
+
+// the boss died: no more enemies this wave
+export function cancelSpawns() { w.toSpawn = 0; w.squad = 0; w.boss = false; }
 
 // Developer mode: jump so that the next wave started is `n`
 export function jumpToWave(n) { game.wave = n - 1; Object.assign(w, { toSpawn: 0, spawnT: 0, breakT: 0.5, running: false, boss: false, squad: 0 }); closePortals(); }
